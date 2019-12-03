@@ -1,0 +1,19 @@
+#!/bin/sh
+
+exec 1>&2
+
+echo Running cargo fmt...
+if ! cargo +nightly fmt --all -- --check ; then
+    exit 1
+fi
+
+if rustup component list | grep -q clippy ; then
+    echo Running cargo clippy...
+    if ! cargo clippy -- --deny warnings ; then
+        exit 1
+    fi
+else
+    echo Clippy not installed. Skipping...
+fi
+
+exit 0

@@ -33,8 +33,8 @@ What is the sum of the fuel requirements for all of the modules on your
 spacecraft?
 */
 
-pub fn aoc_1a(content: &Vec<u32>) -> u32 {
-    content.iter().map(|i| (i/3)-2).sum()
+pub fn aoc_1a(content: &[u32]) -> u32 {
+    content.iter().map(|i| (i / 3) - 2).sum()
 }
 
 #[cfg(test)]
@@ -48,14 +48,14 @@ fn test_1a_builtin() {
     assert_eq!(aoc_1a(&vec!(14)), 2);
     assert_eq!(aoc_1a(&vec!(1969)), 654);
     assert_eq!(aoc_1a(&vec!(100756)), 33583);
-
 }
 #[test]
 fn test_1a_unique() {
-    assert_eq!(aoc_1a(&get_test_from_str(include_str!("test_input.txt")).unwrap()), 3342050);
-
+    assert_eq!(
+        aoc_1a(&get_test_from_str(include_str!("test_input.txt")).unwrap()),
+        3342050
+    );
 }
-
 
 /*
 
@@ -87,28 +87,31 @@ on your spacecraft when also taking into account the mass of the added fuel?
 (Calculate the fuel requirements for each module separately, then add them all
 up at the end.)
 */
-pub fn aoc_1b(content: &Vec<u32>) -> u32 {
-    content.iter().map(|i| {
-        let mut cur_fuel = (i/3)-2;
-        let mut total_fuel = cur_fuel;
-        while cur_fuel >= 9  {
-            cur_fuel = max(0, (cur_fuel/3)-2);
-            total_fuel += cur_fuel;
-        }
-        total_fuel
-    }).sum()
+pub fn aoc_1b(content: &[u32]) -> u32 {
+    content
+        .iter()
+        .map(|i| {
+            let mut cur_fuel = (i / 3) - 2;
+            let mut total_fuel = cur_fuel;
+            while cur_fuel >= 9 {
+                cur_fuel = max(0, (cur_fuel / 3) - 2);
+                total_fuel += cur_fuel;
+            }
+            total_fuel
+        })
+        .sum()
 }
-
 
 #[test]
 fn test_1b_builtin() {
     assert_eq!(aoc_1b(&vec!(14)), 2);
     assert_eq!(aoc_1b(&vec!(1969)), 966);
     assert_eq!(aoc_1b(&vec!(100756)), 50346);
-
 }
 #[test]
 fn test_1b_unique() {
-    assert_eq!(aoc_1b(&get_test_from_str(include_str!("test_input.txt")).unwrap()), 5010211);
-
+    assert_eq!(
+        aoc_1b(&get_test_from_str(include_str!("test_input.txt")).unwrap()),
+        5010211
+    );
 }

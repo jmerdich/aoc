@@ -2,6 +2,7 @@
 name = "aoc_1901"
 version = "0.1.0"
 authors = ["Jake Merdich <jake@merdich.com>"]
+license = "MIT"
 edition = "2018"
 
 [dependencies]

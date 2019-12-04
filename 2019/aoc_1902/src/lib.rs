@@ -244,7 +244,7 @@ mod tests {
             .split(",")
             .map(|s| s.parse::<u32>())
             .collect();
-        let mut in_nums = in_nums.unwrap();
+        let in_nums = in_nums.unwrap();
         let res = aoc2b_run(19690720, &in_nums).unwrap();
         assert_eq!(res, (57, 41));
     }

@@ -316,7 +316,7 @@ mod tests {
     #[test]
     fn aoc3a_prob() {
         let prob: Vec<&str> = include_str!("test_input.txt")
-            .split("\n")
+            .lines()
             .filter(|s| s.len() > 0)
             .collect();
         assert_eq!(prob.len(), 2);

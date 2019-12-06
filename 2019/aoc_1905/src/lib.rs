@@ -1,5 +1,426 @@
+#![allow(dead_code)]
+/*
+
+--- Day 5: Sunny with a Chance of Asteroids ---
+You're starting to sweat as the ship makes its way toward Mercury. The Elves
+suggest that you get the air conditioner working by upgrading your ship
+computer to support the Thermal Environment Supervision Terminal.
+
+The Thermal Environment Supervision Terminal (TEST) starts by running a
+diagnostic program (your puzzle input). The TEST diagnostic program will run
+on your existing Intcode computer after a few modifications:
+
+First, you'll need to add two new instructions:
+
+Opcode 3 takes a single integer as input and saves it to the address given by
+its only parameter. For example, the instruction 3,50 would take an input
+value and store it at address 50. Opcode 4 outputs the value of its only
+parameter. For example, the instruction 4,50 would output the value at
+address 50.
+
+Programs that use these instructions will come with documentation that
+explains what should be connected to the input and output. The program
+3,0,4,0,99 outputs whatever it gets as input, then halts.
+
+Second, you'll need to add support for parameter modes:
+
+Each parameter of an instruction is handled based on its parameter mode.
+Right now, your ship computer already understands parameter mode 0, position
+mode, which causes the parameter to be interpreted as a position - if the
+parameter is 50, its value is the value stored at address 50 in memory. Until
+now, all parameters have been in position mode.
+
+Now, your ship computer will also need to handle parameters in mode 1,
+immediate mode. In immediate mode, a parameter is interpreted as a value - if
+the parameter is 50, its value is simply 50.
+
+Parameter modes are stored in the same value as the instruction's opcode. The
+opcode is a two-digit number based only on the ones and tens digit of the
+value, that is, the opcode is the rightmost two digits of the first value in
+an instruction. Parameter modes are single digits, one per parameter, read
+right-to-left from the opcode: the first parameter's mode is in the hundreds
+digit, the second parameter's mode is in the thousands digit, the third
+parameter's mode is in the ten-thousands digit, and so on. Any missing modes
+are 0.
+
+For example, consider the program 1002,4,3,4,33.
+
+The first instruction, 1002,4,3,4, is a multiply instruction - the rightmost
+two digits of the first value, 02, indicate opcode 2, multiplication. Then,
+going right to left, the parameter modes are 0 (hundreds digit), 1 (thousands
+digit), and 0 (ten-thousands digit, not present and therefore zero):
+
+ABCDE 1002
+
+DE - two-digit opcode, 02 == opcode 2 C - mode of 1st parameter, 0 ==
+position mode B - mode of 2nd parameter, 1 == immediate mode A - mode of 3rd
+parameter, 0 == position mode, omitted due to being a leading zero
+
+This instruction multiplies its first two parameters. The first parameter, 4
+in position mode, works like it did before - its value is the value stored at
+address 4 (33). The second parameter, 3 in immediate mode, simply has value
+3. The result of this operation, 33 * 3 = 99, is written according to the
+third parameter, 4 in position mode, which also works like it did before - 99
+is written to address 4.
+
+Parameters that an instruction writes to will never be in immediate mode.
+
+Finally, some notes:
+
+It is important to remember that the instruction pointer should increase by
+the number of values in the instruction after the instruction finishes.
+Because of the new instructions, this amount is no longer always 4. Integers
+can be negative: 1101,100,-1,4,0 is a valid program (find 100 + -1, store the
+result in position 4).
+
+The TEST diagnostic program will start by requesting from the user the ID of
+the system to test by running an input instruction - provide it 1, the ID for
+the ship's air conditioner unit.
+
+It will then perform a series of diagnostic tests confirming that various
+parts of the Intcode computer, like parameter modes, function correctly. For
+each test, it will run an output instruction indicating how far the result of
+the test was from the expected value, where 0 means the test was successful.
+Non-zero outputs mean that a function is not working correctly; check the
+instructions that were run before the output instruction to see which one
+failed.
+
+Finally, the program will output a diagnostic code and immediately halt. This
+final output isn't an error; an output followed immediately by a halt means
+the program finished. If all outputs were zero except the diagnostic code,
+the diagnostic program ran successfully.
+
+After providing 1 to the only input instruction and passing all the tests,
+what diagnostic code does the program produce?
+--- Part Two ---
+The air conditioner comes online! Its cold air feels good for a while, but
+then the TEST alarms start to go off. Since the air conditioner can't vent
+its heat anywhere but back into the spacecraft, it's actually making the air
+inside the ship warmer.
+
+Instead, you'll need to use the TEST to extend the thermal radiators.
+Fortunately, the diagnostic program (your puzzle input) is already equipped
+for this. Unfortunately, your Intcode computer is not.
+
+Your computer is only missing a few opcodes:
+
+Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the
+instruction pointer to the value from the second parameter. Otherwise, it
+does nothing. Opcode 6 is jump-if-false: if the first parameter is zero, it
+sets the instruction pointer to the value from the second parameter.
+Otherwise, it does nothing. Opcode 7 is less than: if the first parameter is
+less than the second parameter, it stores 1 in the position given by the
+third parameter. Otherwise, it stores 0. Opcode 8 is equals: if the first
+parameter is equal to the second parameter, it stores 1 in the position given
+by the third parameter. Otherwise, it stores 0.
+
+Like all instructions, these instructions need to support parameter modes as
+described above.
+
+Normally, after an instruction is finished, the instruction pointer increases
+by the number of values in that instruction. However, if the instruction
+modifies the instruction pointer, that value is used and the instruction
+pointer is not automatically increased.
+
+For example, here are several programs that take one input, compare it to the
+value 8, and then produce one output:
+
+3,9,8,9,10,9,4,9,99,-1,8 - Using position mode, consider whether the input is
+equal to 8; output 1 (if it is) or 0 (if it is not). 3,9,7,9,10,9,4,9,99,-1,8
+- Using position mode, consider whether the input is less than 8; output 1
+(if it is) or 0 (if it is not). 3,3,1108,-1,8,3,4,3,99 - Using immediate
+mode, consider whether the input is equal to 8; output 1 (if it is) or 0 (if
+it is not). 3,3,1107,-1,8,3,4,3,99 - Using immediate mode, consider whether
+the input is less than 8; output 1 (if it is) or 0 (if it is not).
+
+Here are some jump tests that take an input, then output 0 if the input was
+zero or 1 if the input was non-zero:
+
+3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9 (using position mode)
+3,3,1105,-1,9,1101,0,0,12,4,12,99,1 (using immediate mode)
+
+Here's a larger example:
+
+3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99
+
+The above example program uses an input instruction to ask for a single
+number. The program will then output 999 if the input value is below 8,
+output 1000 if the input value is equal to 8, or output 1001 if the input
+value is greater than 8.
+
+This time, when the TEST diagnostic program runs its input instruction to get
+the ID of the system to test, provide it 5, the ID for the ship's thermal
+radiator controller. This diagnostic test suite only outputs one number, the
+diagnostic code.
+
+What is the diagnostic code for system ID 5?
+
+*/
+extern crate num;
+#[macro_use]
+extern crate num_derive;
+
+#[repr(transparent)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+struct Op(u32);
+
+#[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
+enum OpCode {
+    Add = 1,
+    Mult = 2,
+    Input = 3,
+    Output = 4,
+    JumpTrue = 5,
+    JumpFalse = 6,
+    LessThan = 7,
+    Equals = 8,
+    EndPgm = 99,
+}
+
+#[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
+enum OpMode {
+    Pos = 0,
+    Imm = 1,
+}
+
+impl Op {
+    fn from_i32(value: i32) -> Op {
+        assert!(value >= 0); // Negative opcodes are likely an error?
+        Op { 0: value as u32 }
+    }
+
+    fn opcode(&self) -> Option<OpCode> {
+        num::FromPrimitive::from_u32(self.0 % 100)
+    }
+
+    fn param_mode(&self, param_idx: u32) -> Option<OpMode> {
+        if param_idx > (((std::u32::MAX as f32).log10().ceil() as u32) - 2) {
+            // Index too big!
+            return None;
+        }
+        num::FromPrimitive::from_u32((self.0 / 10u32.pow(param_idx + 2)) % 10)
+    }
+}
+
+fn get_value(tape: &[i32], addr: i32, mode: OpMode) -> i32 {
+    match mode {
+        OpMode::Pos => {
+            assert!(addr >= 0); // negative absolute addresses don't make sense
+            tape[addr as usize]
+        }
+        OpMode::Imm => addr,
+    }
+}
+fn set_value(tape: &mut [i32], addr: i32, mode: OpMode, value: i32) {
+    match mode {
+        OpMode::Pos => {
+            assert!(addr >= 0); // negative absolute addresses don't make sense
+            tape[addr as usize] = value;
+        }
+        OpMode::Imm => panic!(),
+    }
+}
+
+enum AluKind {
+    Add,
+    Mult,
+    LessThan,
+    Equals,
+}
+
+// Output: new idx
+fn intcode_handle_alu(idx: usize, tape: &mut [i32], kind: AluKind) -> usize {
+    assert!(tape.len() >= idx + 4);
+    let op = Op::from_i32(tape[idx]);
+    let val_1 = get_value(tape, tape[idx + 1], op.param_mode(0).unwrap());
+    let val_2 = get_value(tape, tape[idx + 2], op.param_mode(1).unwrap());
+
+    let res: i32 = match kind {
+        AluKind::Add => val_1 + val_2,
+        AluKind::Mult => val_1 * val_2,
+        AluKind::LessThan => (val_1 < val_2) as i32,
+        AluKind::Equals => (val_1 == val_2) as i32,
+    };
+
+    set_value(tape, tape[idx + 3], op.param_mode(2).unwrap(), res);
+
+    idx + 4
+}
+
+fn intcode_handle_input(idx: usize, tape: &mut [i32], input: &mut Vec<i32>) -> usize {
+    assert_eq!(Op::from_i32(tape[idx]).opcode(), Some(OpCode::Input));
+    assert!(tape.len() >= idx + 2);
+    assert!(!input.is_empty());
+
+    let op = Op::from_i32(tape[idx]);
+    set_value(
+        tape,
+        tape[idx + 1],
+        op.param_mode(0).unwrap(),
+        input.pop().unwrap(),
+    );
+
+    idx + 2
+}
+
+fn intcode_handle_output(idx: usize, tape: &mut [i32], output: &mut Vec<i32>) -> usize {
+    assert_eq!(Op::from_i32(tape[idx]).opcode(), Some(OpCode::Output));
+    assert!(tape.len() >= idx + 2);
+
+    let op = Op::from_i32(tape[idx]);
+    output.push(get_value(tape, tape[idx + 1], op.param_mode(0).unwrap()));
+
+    idx + 2
+}
+
+enum JumpKind {
+    NonZero,
+    Zero,
+}
+
+fn intcode_handle_cond_jump(idx: usize, tape: &[i32], kind: JumpKind) -> usize {
+    assert!(tape.len() >= idx + 3);
+    let op = Op::from_i32(tape[idx]);
+    let test_value = get_value(tape, tape[idx + 1], op.param_mode(0).unwrap());
+    let addr = get_value(tape, tape[idx + 2], op.param_mode(1).unwrap());
+    assert!(addr > 0);
+
+    let pred = match kind {
+        JumpKind::NonZero => test_value != 0,
+        JumpKind::Zero => test_value == 0,
+    };
+
+    if pred {
+        return addr as usize;
+    } else {
+        return idx + 3;
+    }
+}
+
+pub fn intcode_run(mut tape: Vec<i32>, mut input: Vec<i32>) -> (Vec<i32>, Vec<i32>) {
+    let mut pc: usize = 0;
+    #[allow(unused_assignments)]
+    let mut done = false;
+    let mut output: Vec<i32> = Vec::new();
+    loop {
+        match Op::from_i32(tape[pc]).opcode() {
+            Some(OpCode::Add) => pc = intcode_handle_alu(pc, &mut tape, AluKind::Add),
+            Some(OpCode::Mult) => pc = intcode_handle_alu(pc, &mut tape, AluKind::Mult),
+            Some(OpCode::LessThan) => pc = intcode_handle_alu(pc, &mut tape, AluKind::LessThan),
+            Some(OpCode::Equals) => pc = intcode_handle_alu(pc, &mut tape, AluKind::Equals),
+            Some(OpCode::Input) => pc = intcode_handle_input(pc, &mut tape, &mut input),
+            Some(OpCode::Output) => pc = intcode_handle_output(pc, &mut tape, &mut output),
+            Some(OpCode::JumpTrue) => pc = intcode_handle_cond_jump(pc, &tape, JumpKind::NonZero),
+            Some(OpCode::JumpFalse) => pc = intcode_handle_cond_jump(pc, &tape, JumpKind::Zero),
+            Some(OpCode::EndPgm) => {
+                done = true;
+                break;
+            }
+            None => panic!("Unrecognized opcode: {}@{}", tape[pc], pc),
+        }
+    }
+    assert!(done);
+    (tape, output)
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn immediate() {
+        assert_eq!(
+            intcode_run(vec!(1002, 4, 3, 4, 33), vec!()),
+            (vec!(1002, 4, 3, 4, 99), vec!())
+        );
+    }
+
+    #[test]
+    fn basic_io() {
+        let echoed = 12345;
+        assert_eq!(
+            intcode_run(vec!(3, 0, 4, 0, 99), vec!(echoed)).1,
+            vec!(echoed)
+        );
+    }
+
+    #[test]
+    fn aoc5a_prob() {
+        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+            .lines()
+            .collect::<String>()
+            .split(",")
+            .map(|s| s.parse::<i32>())
+            .collect();
+        let input: Vec<i32> = vec![1];
+        assert_eq!(
+            intcode_run(in_nums.unwrap(), input).1,
+            vec!(0, 0, 0, 0, 0, 0, 0, 0, 0, 5346030)
+        );
+    }
+
+    #[test]
+    fn test_jmps() {
+        // Checks if equal to 8
+        for num in vec![7, 8] {
+            assert_eq!(
+                intcode_run(vec!(3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8), vec!(num)).1,
+                vec!((num == 8) as i32)
+            );
+            assert_eq!(
+                intcode_run(vec!(3, 3, 1108, -1, 8, 3, 4, 3, 99), vec!(num)).1,
+                vec!((num == 8) as i32)
+            );
+        }
+        // checks if less than 8
+        for num in vec![7, 8] {
+            assert_eq!(
+                intcode_run(vec!(3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8), vec!(num)).1,
+                vec!((num < 8) as i32)
+            );
+            assert_eq!(
+                intcode_run(vec!(3, 3, 1107, -1, 8, 3, 4, 3, 99), vec!(num)).1,
+                vec!((num < 8) as i32)
+            );
+        }
+    }
+    #[test]
+    fn test_bigger() {
+        let check = |input, expected| {
+            assert_eq!(
+                intcode_run(
+                    vec!(
+                        3, 21, 1008, 21, 8, 20, 1005, 20, 22, 107, 8, 21, 20, 1006, 20, 31, 1106,
+                        0, 36, 98, 0, 0, 1002, 21, 125, 20, 4, 20, 1105, 1, 46, 104, 999, 1105, 1,
+                        46, 1101, 1000, 1, 20, 4, 20, 1105, 1, 46, 98, 99
+                    ),
+                    vec!(input)
+                )
+                .1,
+                vec!(expected)
+            )
+        };
+
+        check(-1, 999);
+        check(7, 999);
+        check(8, 1000);
+        check(9, 1001);
+    }
+
+    #[test]
+    fn aoc5b_prob() {
+        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+            .lines()
+            .collect::<String>()
+            .split(",")
+            .map(|s| s.parse::<i32>())
+            .collect();
+        let input: Vec<i32> = vec![5];
+        assert_eq!(intcode_run(in_nums.unwrap(), input).1, vec!(513116));
+    }
+
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);

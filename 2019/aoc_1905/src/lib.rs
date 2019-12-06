@@ -191,11 +191,11 @@ impl Op {
         Op { 0: value as u32 }
     }
 
-    fn opcode(&self) -> Option<OpCode> {
+    fn opcode(self) -> Option<OpCode> {
         num::FromPrimitive::from_u32(self.0 % 100)
     }
 
-    fn param_mode(&self, param_idx: u32) -> Option<OpMode> {
+    fn param_mode(self, param_idx: u32) -> Option<OpMode> {
         if param_idx > (((std::u32::MAX as f32).log10().ceil() as u32) - 2) {
             // Index too big!
             return None;
@@ -293,9 +293,9 @@ fn intcode_handle_cond_jump(idx: usize, tape: &[i32], kind: JumpKind) -> usize {
     };
 
     if pred {
-        return addr as usize;
+        addr as usize
     } else {
-        return idx + 3;
+        idx + 3
     }
 }
 

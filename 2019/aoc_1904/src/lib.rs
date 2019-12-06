@@ -37,7 +37,7 @@ fn predicate(input: &str) -> bool {
         }
         prev_num = this_num;
     }
-    return found_double;
+    found_double
 }
 fn predicate1b(input: &str) -> bool {
     let mut found_double: bool = false; // ignore < 6 digits...
@@ -53,11 +53,11 @@ fn predicate1b(input: &str) -> bool {
             found_double = true;
         }
     }
-    return found_double;
+    found_double
 }
 
 pub fn aoc4a(start: u32, end: u32) -> usize {
-    (start..(end + 1))
+    (start..=end)
         .filter(|i| predicate1b(&i.to_string()))
         .count()
 }
@@ -99,18 +99,14 @@ fn predicate2(input: &str) -> bool {
             consecutive_count = 0
         }
     }
-    if consecutive_count != 0 {
-        if consecutive_count == 1 {
-            retval = true;
-        }
+    if consecutive_count == 1 {
+        retval = true;
     }
-    return retval;
+    retval
 }
 
 pub fn aoc4b(start: u32, end: u32) -> usize {
-    (start..(end + 1))
-        .filter(|i| predicate2(&i.to_string()))
-        .count()
+    (start..=end).filter(|i| predicate2(&i.to_string())).count()
 }
 
 #[cfg(test)]

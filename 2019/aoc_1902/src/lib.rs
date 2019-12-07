@@ -75,62 +75,11 @@ value 2. What value is left at position 0 after the program halts?
 
 */
 
-#[allow(dead_code)] // since mem::transmute can construct even without naming it....
-#[repr(transparent)]
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-struct Op(u32);
-
-impl Op {
-    const ADD: Op = Op { 0: 1 };
-    const MULT: Op = Op { 0: 2 };
-    const ENDPGM: Op = Op { 0: 99 };
-    const fn from_u32(value: u32) -> Op {
-        Op { 0: value }
-    }
-
-    const fn as_u32(self: Op) -> u32 {
-        self.0
-    }
-}
-
-// Output: new idx
-fn aoc2a_handle_add(idx: usize, tape: &mut [u32]) -> usize {
-    assert_eq!(tape[idx], Op::ADD.as_u32());
-    assert!(tape.len() >= idx + 4);
-    let loc_1 = tape[idx + 1] as usize;
-    let loc_2 = tape[idx + 2] as usize;
-    let loc_dst = tape[idx + 3] as usize;
-    //println!("ADD: {}@{} + {}@{} => {}@{}", tape[loc_1], loc_1, tape[loc_2], loc_2, tape[loc_1] + tape[loc_2], loc_dst);
-
-    tape[loc_dst] = tape[loc_1] + tape[loc_2];
-
-    idx + 4
-}
-// Output: new idx
-fn aoc2a_handle_mult(idx: usize, tape: &mut [u32]) -> usize {
-    assert_eq!(tape[idx], Op::MULT.as_u32());
-    assert!(tape.len() >= idx + 4);
-    let loc_1 = tape[idx + 1] as usize;
-    let loc_2 = tape[idx + 2] as usize;
-    let loc_dst = tape[idx + 3] as usize;
-    //println!("MULT: {}@{} * {}@{} => {}@{}", tape[loc_1], loc_1, tape[loc_2], loc_2, tape[loc_1] * tape[loc_2], loc_dst);
-
-    tape[loc_dst] = tape[loc_1] * tape[loc_2];
-
-    idx + 4
-}
-
-pub fn aoc2a_run(mut tape: Vec<u32>) -> Vec<u32> {
-    let mut pc: usize = 0;
-    loop {
-        match Op::from_u32(tape[pc]) {
-            Op::ADD => pc = aoc2a_handle_add(pc, &mut tape),
-            Op::MULT => pc = aoc2a_handle_mult(pc, &mut tape),
-            Op::ENDPGM => break,
-            _ => panic!(),
-        }
-    }
-    tape
+use intcode::IntMachine;
+pub fn aoc2a_run(tape: Vec<u32>) -> Vec<u32> {
+    let mut cpu = IntMachine::new(tape.iter().map(|i| *i as i32).collect());
+    cpu.run();
+    cpu.get_tape().iter().map(|i| *i as u32).collect()
 }
 
 /*

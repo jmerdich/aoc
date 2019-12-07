@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "intcode",
     "aoc_1901",
     "aoc_1902",
     "aoc_1903",

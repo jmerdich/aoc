@@ -3,6 +3,8 @@ extern crate num;
 #[macro_use]
 extern crate num_derive;
 
+use std::collections::VecDeque;
+
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 struct Op(u32);
@@ -50,8 +52,8 @@ pub struct IntMachine {
     pc: usize,
     cur_op: Op,
     pub debug_mode: bool,
-    pub input: Vec<i32>,
-    pub output: Vec<i32>,
+    pub input: VecDeque<i32>,
+    pub output: VecDeque<i32>,
 }
 
 enum AluKind {
@@ -75,8 +77,34 @@ impl IntMachine {
             pc: 0,
             cur_op: first_op,
             debug_mode: false,
-            input: Vec::new(),
-            output: Vec::new(),
+            input: VecDeque::new(),
+            output: VecDeque::new(),
+        }
+    }
+    #[cfg(not(debug_assertions))]
+    fn dbg(&self, _num_params: u8, _op_res: Option<i32>) {}
+
+    #[cfg(debug_assertions)]
+    fn dbg(&self, num_params: u8, op_res: Option<i32>) {
+        if !self.debug_mode {
+            return;
+        }
+
+        let opcode = self.cur_op.opcode().unwrap();
+
+        print!("{} - {:?} ", self.pc, opcode);
+        for i in 0..num_params {
+            let param = self.tape[self.pc + (i as usize) + 1];
+            match self.cur_op.param_mode(u32::from(i)).unwrap() {
+                OpMode::Pos => print!(" {}@{}", self.tape[param as usize], param),
+                OpMode::Imm => print!(" {}", param),
+            }
+        }
+
+        if let Some(res) = op_res {
+            println!(" => {}", res);
+        } else {
+            println!();
         }
     }
 
@@ -92,6 +120,7 @@ impl IntMachine {
             Some(OpCode::JumpTrue) => self.handle_cond_jump(JumpKind::NonZero),
             Some(OpCode::JumpFalse) => self.handle_cond_jump(JumpKind::Zero),
             Some(OpCode::EndPgm) => {
+                self.dbg(0, None);
                 return true; // Don't increment pc, so nothing happens when called again.
             }
             None => panic!("Unrecognized opcode: {}@{}", self.tape[self.pc], self.pc),
@@ -142,6 +171,7 @@ impl IntMachine {
             AluKind::LessThan => (val_1 < val_2) as i32,
             AluKind::Equals => (val_1 == val_2) as i32,
         };
+        self.dbg(3, Some(res));
 
         self.set_param(2, res);
         self.pc + 4
@@ -151,8 +181,10 @@ impl IntMachine {
         assert!(self.tape.len() >= self.pc + 2);
         assert!(!self.input.is_empty());
 
-        let value = self.input.pop().unwrap();
+        let value = self.input.pop_front().unwrap();
         self.set_param(0, value);
+
+        self.dbg(1, Some(value));
 
         self.pc + 2
     }
@@ -160,7 +192,10 @@ impl IntMachine {
     fn handle_output(&mut self) -> usize {
         assert!(self.tape.len() >= self.pc + 2);
 
-        self.output.push(self.get_param(0));
+        let value = self.get_param(0);
+        self.output.push_back(value);
+
+        self.dbg(1, Some(value));
 
         self.pc + 2
     }
@@ -177,6 +212,7 @@ impl IntMachine {
             JumpKind::Zero => test_value == 0,
         };
 
+        self.dbg(1, Some(pred as i32));
         if pred {
             target as usize
         } else {
@@ -200,7 +236,7 @@ mod tests {
     fn basic_io() {
         let mut cpu = IntMachine::new(vec![3, 0, 4, 0, 99]);
         let echoed = 12345;
-        cpu.input.push(echoed);
+        cpu.input.push_back(echoed);
         cpu.run();
         assert_eq!(cpu.output, vec!(echoed));
     }
@@ -210,22 +246,22 @@ mod tests {
         // Checks if equal to 8
         for num in vec![7, 8] {
             let mut cpu = IntMachine::new(vec![3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8]);
-            cpu.input.push(num);
+            cpu.input.push_back(num);
             cpu.run();
             assert_eq!(cpu.output, vec!((num == 8) as i32));
             let mut cpu = IntMachine::new(vec![3, 3, 1108, -1, 8, 3, 4, 3, 99]);
-            cpu.input.push(num);
+            cpu.input.push_back(num);
             cpu.run();
             assert_eq!(cpu.output, vec!((num == 8) as i32));
         }
         // checks if less than 8
         for num in vec![7, 8] {
             let mut cpu = IntMachine::new(vec![3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8]);
-            cpu.input.push(num);
+            cpu.input.push_back(num);
             cpu.run();
             assert_eq!(cpu.output, vec!((num < 8) as i32));
             let mut cpu = IntMachine::new(vec![3, 3, 1107, -1, 8, 3, 4, 3, 99]);
-            cpu.input.push(num);
+            cpu.input.push_back(num);
             cpu.run();
             assert_eq!(cpu.output, vec!((num < 8) as i32));
         }
@@ -238,7 +274,7 @@ mod tests {
                 98, 0, 0, 1002, 21, 125, 20, 4, 20, 1105, 1, 46, 104, 999, 1105, 1, 46, 1101, 1000,
                 1, 20, 4, 20, 1105, 1, 46, 98, 99,
             ]);
-            cpu.input.push(input);
+            cpu.input.push_back(input);
             cpu.run();
             assert_eq!(cpu.output, vec!(expected))
         };

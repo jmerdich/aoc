@@ -173,7 +173,7 @@ mod tests {
             .map(|s| s.parse::<i32>())
             .collect();
         let mut cpu = IntMachine::new(in_nums.unwrap());
-        cpu.input.push(1);
+        cpu.input.push_back(1);
         cpu.run();
         assert_eq!(cpu.output, vec!(0, 0, 0, 0, 0, 0, 0, 0, 0, 5346030));
     }
@@ -187,7 +187,7 @@ mod tests {
             .map(|s| s.parse::<i32>())
             .collect();
         let mut cpu = IntMachine::new(in_nums.unwrap());
-        cpu.input.push(5);
+        cpu.input.push_back(5);
         cpu.run();
         assert_eq!(cpu.output, vec!(513116));
     }

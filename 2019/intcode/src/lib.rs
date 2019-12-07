@@ -47,15 +47,24 @@ impl Op {
     }
 }
 
+#[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
+pub enum RunMode {
+    Running,
+    EndPgm,
+    InputStalled,
+}
+
 pub struct IntMachine {
     tape: Vec<i32>,
     pc: usize,
     cur_op: Op,
+    run_mode: RunMode,
     pub debug_mode: bool,
     pub input: VecDeque<i32>,
     pub output: VecDeque<i32>,
 }
 
+#[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
 enum AluKind {
     Add,
     Mult,
@@ -63,6 +72,7 @@ enum AluKind {
     Equals,
 }
 
+#[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
 enum JumpKind {
     NonZero,
     Zero,
@@ -76,6 +86,7 @@ impl IntMachine {
             tape,
             pc: 0,
             cur_op: first_op,
+            run_mode: RunMode::Running,
             debug_mode: false,
             input: VecDeque::new(),
             output: VecDeque::new(),
@@ -85,7 +96,7 @@ impl IntMachine {
     fn dbg(&self, _num_params: u8, _op_res: Option<i32>) {}
 
     #[cfg(debug_assertions)]
-    fn dbg(&self, num_params: u8, op_res: Option<i32>) {
+    fn dbg<T: std::fmt::Debug>(&self, num_params: u8, op_res: Option<T>) {
         if !self.debug_mode {
             return;
         }
@@ -102,14 +113,14 @@ impl IntMachine {
         }
 
         if let Some(res) = op_res {
-            println!(" => {}", res);
+            println!(" => {:?}", res);
         } else {
             println!();
         }
     }
 
     // Returns true if done
-    pub fn step(&mut self) -> bool {
+    pub fn step(&mut self) -> RunMode {
         self.pc = match self.cur_op.opcode() {
             Some(OpCode::Add) => self.handle_alu(AluKind::Add),
             Some(OpCode::Mult) => self.handle_alu(AluKind::Mult),
@@ -119,25 +130,36 @@ impl IntMachine {
             Some(OpCode::Output) => self.handle_output(),
             Some(OpCode::JumpTrue) => self.handle_cond_jump(JumpKind::NonZero),
             Some(OpCode::JumpFalse) => self.handle_cond_jump(JumpKind::Zero),
-            Some(OpCode::EndPgm) => {
-                self.dbg(0, None);
-                return true; // Don't increment pc, so nothing happens when called again.
-            }
+            Some(OpCode::EndPgm) => self.handle_endpgm(),
             None => panic!("Unrecognized opcode: {}@{}", self.tape[self.pc], self.pc),
         };
         self.cur_op = Op::from_i32(self.tape[self.pc]);
-        false
+        self.run_mode
     }
 
-    pub fn run(&mut self) {
-        let mut done = false;
-        while !done {
-            done = self.step();
+    pub fn run(&mut self) -> RunMode {
+        while self.run_mode == RunMode::Running {
+            self.step();
         }
+        self.run_mode
     }
 
     pub fn get_tape(&self) -> &[i32] {
         &self.tape
+    }
+
+    pub fn feed_one(&mut self, value: i32) {
+        if self.run_mode == RunMode::InputStalled {
+            self.run_mode = RunMode::Running;
+        }
+        self.input.push_back(value);
+    }
+
+    pub fn feed(&mut self, value: &[i32]) {
+        if self.run_mode == RunMode::InputStalled {
+            self.run_mode = RunMode::Running;
+        }
+        self.input.extend(value);
     }
 
     fn get_param(&self, param_idx: u8) -> i32 {
@@ -161,6 +183,12 @@ impl IntMachine {
         }
     }
 
+    fn handle_endpgm(&mut self) -> usize {
+        self.dbg::<()>(0, None);
+        self.run_mode = RunMode::EndPgm;
+        self.pc
+    }
+
     fn handle_alu(&mut self, kind: AluKind) -> usize {
         assert!(self.tape.len() >= self.pc + 4);
         let val_1 = self.get_param(0);
@@ -179,7 +207,11 @@ impl IntMachine {
 
     fn handle_input(&mut self) -> usize {
         assert!(self.tape.len() >= self.pc + 2);
-        assert!(!self.input.is_empty());
+        if self.input.is_empty() {
+            self.run_mode = RunMode::InputStalled;
+            self.dbg(1, Some("STALLED"));
+            return self.pc;
+        }
 
         let value = self.input.pop_front().unwrap();
         self.set_param(0, value);
@@ -212,7 +244,7 @@ impl IntMachine {
             JumpKind::Zero => test_value == 0,
         };
 
-        self.dbg(1, Some(pred as i32));
+        self.dbg(1, Some(pred));
         if pred {
             target as usize
         } else {

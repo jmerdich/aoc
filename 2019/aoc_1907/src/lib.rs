@@ -80,7 +80,7 @@ Try every combination of phase settings on the amplifiers. What is the highest
 signal that can be sent to the thrusters?
 
 */
-use intcode::IntMachine;
+use intcode::{IntMachine, RunMode};
 
 fn chain_cpus(
     tapes: Vec<Vec<i32>>,
@@ -98,10 +98,14 @@ fn chain_cpus(
     }
 
     let mut last_output: Vec<i32> = first_input;
-    for cpu in cpus.iter_mut() {
-        cpu.input.extend(&dbg!(last_output));
-        cpu.run();
-        last_output = cpu.output.iter().cloned().collect();
+    let mut last_state = RunMode::Running;
+    while last_state != RunMode::EndPgm {
+        for cpu in cpus.iter_mut() {
+            cpu.feed(&dbg!(last_output));
+            last_state = cpu.run();
+            last_output = cpu.output.iter().cloned().collect();
+            cpu.output.clear();
+        }
     }
     last_output
 }
@@ -117,6 +121,12 @@ pub fn amplify(tape: Vec<i32>, inputs: Vec<i32>) -> i32 {
 
 pub fn get_highest_amp(tape: Vec<i32>, size: usize) -> Option<i32> {
     let mut options: Vec<i32> = (0..size as i32).collect();
+    let heap = Heap::new(&mut options);
+    heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
+        .max()
+}
+pub fn get_highest_amp_loop(tape: Vec<i32>, size: usize) -> Option<i32> {
+    let mut options: Vec<i32> = ((size as i32)..(size * 2) as i32).collect();
     let heap = Heap::new(&mut options);
     heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
         .max()
@@ -166,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn prob() {
+    fn prob_a() {
         let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
             .lines()
             .collect::<String>()
@@ -174,5 +184,43 @@ mod tests {
             .map(|s| s.parse::<i32>())
             .collect();
         assert_eq!(get_highest_amp(in_nums.unwrap(), 5).unwrap(), 844468);
+    }
+    #[test]
+    fn prob_b() {
+        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+            .lines()
+            .collect::<String>()
+            .split(",")
+            .map(|s| s.parse::<i32>())
+            .collect();
+        assert_eq!(get_highest_amp_loop(in_nums.unwrap(), 5).unwrap(), 4215746);
+    }
+
+    #[test]
+    fn loopy_1() {
+        assert_eq!(
+            amplify(
+                vec!(
+                    3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26, 27, 4, 27, 1001,
+                    28, -1, 28, 1005, 28, 6, 99, 0, 0, 5
+                ),
+                vec!(9, 8, 7, 6, 5)
+            ),
+            139629729
+        );
+    }
+    #[test]
+    fn loopy_2() {
+        assert_eq!(
+            amplify(
+                vec!(
+                    3, 52, 1001, 52, -5, 52, 3, 53, 1, 52, 56, 54, 1007, 54, 5, 55, 1005, 55, 26,
+                    1001, 54, -5, 54, 1105, 1, 12, 1, 53, 54, 53, 1008, 54, 0, 55, 1001, 55, 1, 55,
+                    2, 53, 55, 53, 4, 53, 1001, 56, -1, 56, 1005, 56, 6, 99, 0, 0, 0, 0, 10
+                ),
+                vec!(9, 7, 8, 5, 6)
+            ),
+            18216
+        );
     }
 }

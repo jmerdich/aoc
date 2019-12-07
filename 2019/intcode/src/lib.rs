@@ -93,7 +93,7 @@ impl IntMachine {
         }
     }
     #[cfg(not(debug_assertions))]
-    fn dbg(&self, _num_params: u8, _op_res: Option<i32>) {}
+    fn dbg<T: std::fmt::Debug>(&self, _num_params: u8, _op_res: Option<T>) {}
 
     #[cfg(debug_assertions)]
     fn dbg<T: std::fmt::Debug>(&self, num_params: u8, op_res: Option<T>) {

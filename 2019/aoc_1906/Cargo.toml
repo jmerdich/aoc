@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 vec-tree = "0.1.2"
+permutohedron = "0.2.4"

@@ -72,10 +72,31 @@ enum AluKind {
     Equals,
 }
 
+impl AluKind {
+    fn from_opcode(op: OpCode) -> Option<AluKind> {
+        match op {
+            OpCode::Add => Some(AluKind::Add),
+            OpCode::Mult => Some(AluKind::Mult),
+            OpCode::LessThan => Some(AluKind::LessThan),
+            OpCode::Equals => Some(AluKind::Equals),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
 enum JumpKind {
     NonZero,
     Zero,
+}
+impl JumpKind {
+    fn from_opcode(op: OpCode) -> Option<JumpKind> {
+        match op {
+            OpCode::JumpFalse => Some(JumpKind::Zero),
+            OpCode::JumpTrue => Some(JumpKind::NonZero),
+            _ => None,
+        }
+    }
 }
 
 impl IntMachine {
@@ -121,15 +142,19 @@ impl IntMachine {
 
     // Returns true if done
     pub fn step(&mut self) -> RunMode {
-        self.pc = match self.cur_op.opcode() {
-            Some(OpCode::Add) => self.handle_alu(AluKind::Add),
-            Some(OpCode::Mult) => self.handle_alu(AluKind::Mult),
-            Some(OpCode::LessThan) => self.handle_alu(AluKind::LessThan),
-            Some(OpCode::Equals) => self.handle_alu(AluKind::Equals),
+        let opcode = self.cur_op.opcode();
+        self.pc = match opcode {
+            Some(OpCode::Add)
+            | Some(OpCode::Mult)
+            | Some(OpCode::LessThan)
+            | Some(OpCode::Equals) => {
+                self.handle_alu(AluKind::from_opcode(opcode.unwrap()).unwrap())
+            }
             Some(OpCode::Input) => self.handle_input(),
             Some(OpCode::Output) => self.handle_output(),
-            Some(OpCode::JumpTrue) => self.handle_cond_jump(JumpKind::NonZero),
-            Some(OpCode::JumpFalse) => self.handle_cond_jump(JumpKind::Zero),
+            Some(OpCode::JumpTrue) | Some(OpCode::JumpFalse) => {
+                self.handle_cond_jump(JumpKind::from_opcode(opcode.unwrap()).unwrap())
+            }
             Some(OpCode::EndPgm) => self.handle_endpgm(),
             None => panic!("Unrecognized opcode: {}@{}", self.tape[self.pc], self.pc),
         };

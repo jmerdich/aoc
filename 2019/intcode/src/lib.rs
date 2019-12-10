@@ -47,7 +47,7 @@ impl Op {
             // Index too big!
             return None;
         }
-        num::FromPrimitive::from_i64((self.0 / 10i64.pow((param_idx + 2) as u32)) % 10i64 as i64)
+        num::FromPrimitive::from_i64((self.0 / 10i64.pow((param_idx + 2) as u32)) % 10i64)
     }
 }
 
@@ -103,6 +103,19 @@ impl JumpKind {
         }
     }
 }
+use std::str::FromStr;
+impl FromStr for IntMachine {
+    type Err = std::num::ParseIntError;
+    fn from_str(input: &str) -> Result<IntMachine, Self::Err> {
+        let in_nums: Result<Vec<Atom>, _> = input
+            .lines()
+            .collect::<String>()
+            .split(',')
+            .map(|s| s.parse::<Atom>())
+            .collect();
+        Ok(IntMachine::new(in_nums?))
+    }
+}
 
 impl IntMachine {
     pub fn new(tape: Vec<Atom>) -> IntMachine {
@@ -150,16 +163,6 @@ impl IntMachine {
         } else {
             println!();
         }
-    }
-
-    pub fn from_str(input: &str) -> Result<IntMachine, std::num::ParseIntError> {
-        let in_nums: Result<Vec<Atom>, _> = input
-            .lines()
-            .collect::<String>()
-            .split(",")
-            .map(|s| s.parse::<Atom>())
-            .collect();
-        Ok(IntMachine::new(in_nums?))
     }
 
     // Returns true if done
@@ -230,7 +233,7 @@ impl IntMachine {
 
     fn get_param(&mut self, param_idx: u8) -> Atom {
         let param_addr = self.tape[self.pc + (param_idx as usize) + 1];
-        match self.cur_op.param_mode(param_idx.into()).unwrap() {
+        match self.cur_op.param_mode(param_idx).unwrap() {
             OpMode::Pos => {
                 assert!(param_addr >= 0); // negative absolute addresses don't make sense
                 self.get_addr(param_addr as usize)
@@ -244,7 +247,7 @@ impl IntMachine {
     }
     fn set_param(&mut self, param_idx: u8, value: Atom) {
         let param_addr = self.tape[self.pc + (param_idx as usize) + 1];
-        match self.cur_op.param_mode(param_idx.into()).unwrap() {
+        match self.cur_op.param_mode(param_idx).unwrap() {
             OpMode::Pos => {
                 assert!(param_addr >= 0); // negative absolute addresses don't make sense
                 self.set_addr(param_addr as usize, value);

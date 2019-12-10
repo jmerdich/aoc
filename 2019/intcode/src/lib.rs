@@ -21,6 +21,7 @@ enum OpCode {
     JumpFalse = 6,
     LessThan = 7,
     Equals = 8,
+    IncStack = 9,
     EndPgm = 99,
 }
 
@@ -28,6 +29,7 @@ enum OpCode {
 enum OpMode {
     Pos = 0,
     Imm = 1,
+    Stack = 2,
 }
 
 impl Op {
@@ -59,6 +61,7 @@ pub enum RunMode {
 pub struct IntMachine {
     tape: Vec<Atom>,
     pc: usize,
+    sp: usize,
     cur_op: Op,
     run_mode: RunMode,
     pub debug_mode: bool,
@@ -108,6 +111,7 @@ impl IntMachine {
         IntMachine {
             tape,
             pc: 0,
+            sp: 0,
             cur_op: first_op,
             run_mode: RunMode::Running,
             debug_mode: false,
@@ -116,10 +120,10 @@ impl IntMachine {
         }
     }
     #[cfg(not(debug_assertions))]
-    fn dbg<T: std::fmt::Debug>(&self, _num_params: u8, _op_res: Option<T>) {}
+    fn dbg<T: std::fmt::Debug>(&mut self, _num_params: u8, _op_res: Option<T>) {}
 
     #[cfg(debug_assertions)]
-    fn dbg<T: std::fmt::Debug>(&self, num_params: u8, op_res: Option<T>) {
+    fn dbg<T: std::fmt::Debug>(&mut self, num_params: u8, op_res: Option<T>) {
         if !self.debug_mode {
             return;
         }
@@ -130,8 +134,14 @@ impl IntMachine {
         for i in 0..num_params {
             let param = self.tape[self.pc + (i as usize) + 1];
             match self.cur_op.param_mode(i).unwrap() {
-                OpMode::Pos => print!(" {}@{}", self.tape[param as usize], param),
+                OpMode::Pos => print!(" {}@{}", self.get_addr(param as usize), param),
                 OpMode::Imm => print!(" {}", param),
+                OpMode::Stack => print!(
+                    " {}@[sp:{}+{}]",
+                    self.get_addr((param + self.sp as i64) as usize),
+                    self.sp,
+                    param
+                ),
             }
         }
 
@@ -140,6 +150,16 @@ impl IntMachine {
         } else {
             println!();
         }
+    }
+
+    pub fn from_str(input: &str) -> Result<IntMachine, std::num::ParseIntError> {
+        let in_nums: Result<Vec<Atom>, _> = input
+            .lines()
+            .collect::<String>()
+            .split(",")
+            .map(|s| s.parse::<Atom>())
+            .collect();
+        Ok(IntMachine::new(in_nums?))
     }
 
     // Returns true if done
@@ -158,6 +178,7 @@ impl IntMachine {
                 self.handle_cond_jump(JumpKind::from_opcode(opcode.unwrap()).unwrap())
             }
             Some(OpCode::EndPgm) => self.handle_endpgm(),
+            Some(OpCode::IncStack) => self.handle_incstack(),
             None => panic!("Unrecognized opcode: {}@{}", self.tape[self.pc], self.pc),
         };
         self.cur_op = Op::from_atom(self.tape[self.pc]);
@@ -175,6 +196,10 @@ impl IntMachine {
         &self.tape
     }
 
+    pub fn get_status(&self) -> RunMode {
+        self.run_mode
+    }
+
     pub fn feed_one(&mut self, value: Atom) {
         if self.run_mode == RunMode::InputStalled {
             self.run_mode = RunMode::Running;
@@ -188,15 +213,33 @@ impl IntMachine {
         }
         self.input.extend(value);
     }
+    fn get_addr(&mut self, addr: usize) -> Atom {
+        if addr >= self.tape.len() {
+            self.tape.resize(addr + 1, 0);
+        }
 
-    fn get_param(&self, param_idx: u8) -> Atom {
+        self.tape[addr]
+    }
+    fn set_addr(&mut self, addr: usize, val: Atom) {
+        if addr >= self.tape.len() {
+            self.tape.resize(addr + 1, 0);
+        }
+
+        self.tape[addr] = val;
+    }
+
+    fn get_param(&mut self, param_idx: u8) -> Atom {
         let param_addr = self.tape[self.pc + (param_idx as usize) + 1];
         match self.cur_op.param_mode(param_idx.into()).unwrap() {
             OpMode::Pos => {
                 assert!(param_addr >= 0); // negative absolute addresses don't make sense
-                self.tape[param_addr as usize]
+                self.get_addr(param_addr as usize)
             }
             OpMode::Imm => param_addr,
+            OpMode::Stack => {
+                assert!(param_addr + self.sp as i64 >= 0);
+                self.get_addr((param_addr + self.sp as i64) as usize)
+            }
         }
     }
     fn set_param(&mut self, param_idx: u8, value: Atom) {
@@ -204,9 +247,13 @@ impl IntMachine {
         match self.cur_op.param_mode(param_idx.into()).unwrap() {
             OpMode::Pos => {
                 assert!(param_addr >= 0); // negative absolute addresses don't make sense
-                self.tape[param_addr as usize] = value;
+                self.set_addr(param_addr as usize, value);
             }
             OpMode::Imm => panic!(), // Writing to an immediate doesn't make sense
+            OpMode::Stack => {
+                assert!(param_addr + self.sp as i64 >= 0);
+                self.set_addr((param_addr + self.sp as i64) as usize, value);
+            }
         }
     }
 
@@ -214,6 +261,18 @@ impl IntMachine {
         self.dbg::<()>(0, None);
         self.run_mode = RunMode::EndPgm;
         self.pc
+    }
+
+    fn handle_incstack(&mut self) -> usize {
+        let val_1 = self.get_param(0);
+
+        // Holy crap, Rust, really????
+        assert!((self.sp as isize + (val_1 as isize)) > 0isize);
+        self.sp = (self.sp as isize + (val_1 as isize)) as usize;
+
+        self.dbg(1, Some(self.sp));
+
+        self.pc + 2
     }
 
     fn handle_alu(&mut self, kind: AluKind) -> usize {
@@ -259,19 +318,19 @@ impl IntMachine {
         self.pc + 2
     }
 
-    fn handle_cond_jump(&self, kind: JumpKind) -> usize {
+    fn handle_cond_jump(&mut self, kind: JumpKind) -> usize {
         assert!(self.tape.len() >= self.pc + 3);
 
         let test_value = self.get_param(0);
         let target = self.get_param(1);
-        assert!(target > 0);
+        assert!(target >= 0);
 
         let pred = match kind {
             JumpKind::NonZero => test_value != 0,
             JumpKind::Zero => test_value == 0,
         };
 
-        self.dbg(1, Some(pred));
+        self.dbg(2, Some(pred));
         if pred {
             target as usize
         } else {

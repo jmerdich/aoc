@@ -80,13 +80,13 @@ Try every combination of phase settings on the amplifiers. What is the highest
 signal that can be sent to the thrusters?
 
 */
-use intcode::{IntMachine, RunMode};
+use intcode::{Atom, IntMachine, RunMode};
 
 fn chain_cpus(
-    tapes: Vec<Vec<i32>>,
-    initial_inputs: Vec<Vec<i32>>,
-    first_input: Vec<i32>,
-) -> Vec<i32> {
+    tapes: Vec<Vec<Atom>>,
+    initial_inputs: Vec<Vec<Atom>>,
+    first_input: Vec<Atom>,
+) -> Vec<Atom> {
     assert!(tapes.len() == initial_inputs.len());
 
     let mut cpus: Vec<IntMachine> = Vec::new();
@@ -97,7 +97,7 @@ fn chain_cpus(
         cpus.push(cpu);
     }
 
-    let mut last_output: Vec<i32> = first_input;
+    let mut last_output: Vec<Atom> = first_input;
     let mut last_state = RunMode::Running;
     while last_state != RunMode::EndPgm {
         for cpu in cpus.iter_mut() {
@@ -110,23 +110,23 @@ fn chain_cpus(
     last_output
 }
 
-pub fn amplify(tape: Vec<i32>, inputs: Vec<i32>) -> i32 {
-    let tapes: Vec<Vec<i32>> = (0..inputs.len()).map(|_| tape.clone()).collect();
-    let input_each: Vec<Vec<i32>> = inputs.iter().map(|i| vec![*i]).collect();
+pub fn amplify(tape: Vec<Atom>, inputs: Vec<Atom>) -> Atom {
+    let tapes: Vec<Vec<Atom>> = (0..inputs.len()).map(|_| tape.clone()).collect();
+    let input_each: Vec<Vec<Atom>> = inputs.iter().map(|i| vec![*i]).collect();
 
     let output = chain_cpus(tapes, input_each, vec![0]);
     assert_eq!(output.len(), 1);
     *output.first().unwrap()
 }
 
-pub fn get_highest_amp(tape: Vec<i32>, size: usize) -> Option<i32> {
-    let mut options: Vec<i32> = (0..size as i32).collect();
+pub fn get_highest_amp(tape: Vec<Atom>, size: usize) -> Option<Atom> {
+    let mut options: Vec<Atom> = (0..size as Atom).collect();
     let heap = Heap::new(&mut options);
     heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
         .max()
 }
-pub fn get_highest_amp_loop(tape: Vec<i32>, size: usize) -> Option<i32> {
-    let mut options: Vec<i32> = ((size as i32)..(size * 2) as i32).collect();
+pub fn get_highest_amp_loop(tape: Vec<Atom>, size: usize) -> Option<Atom> {
+    let mut options: Vec<Atom> = ((size as Atom)..(size * 2) as Atom).collect();
     let heap = Heap::new(&mut options);
     heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
         .max()
@@ -177,21 +177,21 @@ mod tests {
 
     #[test]
     fn prob_a() {
-        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+        let in_nums: Result<Vec<Atom>, std::num::ParseIntError> = include_str!("test_input.txt")
             .lines()
             .collect::<String>()
             .split(",")
-            .map(|s| s.parse::<i32>())
+            .map(|s| s.parse::<Atom>())
             .collect();
         assert_eq!(get_highest_amp(in_nums.unwrap(), 5).unwrap(), 844468);
     }
     #[test]
     fn prob_b() {
-        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+        let in_nums: Result<Vec<Atom>, std::num::ParseIntError> = include_str!("test_input.txt")
             .lines()
             .collect::<String>()
             .split(",")
-            .map(|s| s.parse::<i32>())
+            .map(|s| s.parse::<Atom>())
             .collect();
         assert_eq!(get_highest_amp_loop(in_nums.unwrap(), 5).unwrap(), 4215746);
     }

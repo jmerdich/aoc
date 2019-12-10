@@ -162,15 +162,15 @@ extern crate intcode;
 
 #[cfg(test)]
 mod tests {
-    use intcode::IntMachine;
+    use intcode::{Atom, IntMachine};
 
     #[test]
     fn aoc5a_prob() {
-        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+        let in_nums: Result<Vec<Atom>, std::num::ParseIntError> = include_str!("test_input.txt")
             .lines()
             .collect::<String>()
             .split(",")
-            .map(|s| s.parse::<i32>())
+            .map(|s| s.parse::<Atom>())
             .collect();
         let mut cpu = IntMachine::new(in_nums.unwrap());
         cpu.input.push_back(1);
@@ -180,11 +180,11 @@ mod tests {
 
     #[test]
     fn aoc5b_prob() {
-        let in_nums: Result<Vec<i32>, std::num::ParseIntError> = include_str!("test_input.txt")
+        let in_nums: Result<Vec<Atom>, std::num::ParseIntError> = include_str!("test_input.txt")
             .lines()
             .collect::<String>()
             .split(",")
-            .map(|s| s.parse::<i32>())
+            .map(|s| s.parse::<Atom>())
             .collect();
         let mut cpu = IntMachine::new(in_nums.unwrap());
         cpu.input.push_back(5);

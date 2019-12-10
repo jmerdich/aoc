@@ -5,9 +5,11 @@ extern crate num_derive;
 
 use std::collections::VecDeque;
 
+pub type Atom = i64;
+
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-struct Op(u32);
+struct Op(Atom);
 
 #[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
 enum OpCode {
@@ -29,21 +31,21 @@ enum OpMode {
 }
 
 impl Op {
-    fn from_i32(value: i32) -> Op {
+    fn from_atom(value: Atom) -> Op {
         assert!(value >= 0); // Negative opcodes are likely an error?
-        Op { 0: value as u32 }
+        Op { 0: value }
     }
 
     fn opcode(self) -> Option<OpCode> {
-        num::FromPrimitive::from_u32(self.0 % 100)
+        num::FromPrimitive::from_i64(self.0 % 100i64)
     }
 
-    fn param_mode(self, param_idx: u32) -> Option<OpMode> {
-        if param_idx > (((std::u32::MAX as f32).log10().ceil() as u32) - 2) {
+    fn param_mode(self, param_idx: u8) -> Option<OpMode> {
+        if param_idx > (((std::i64::MAX as f32).log10().ceil() as u8) - 2) {
             // Index too big!
             return None;
         }
-        num::FromPrimitive::from_u32((self.0 / 10u32.pow(param_idx + 2)) % 10)
+        num::FromPrimitive::from_i64((self.0 / 10i64.pow((param_idx + 2) as u32)) % 10i64 as i64)
     }
 }
 
@@ -55,13 +57,13 @@ pub enum RunMode {
 }
 
 pub struct IntMachine {
-    tape: Vec<i32>,
+    tape: Vec<Atom>,
     pc: usize,
     cur_op: Op,
     run_mode: RunMode,
     pub debug_mode: bool,
-    pub input: VecDeque<i32>,
-    pub output: VecDeque<i32>,
+    pub input: VecDeque<Atom>,
+    pub output: VecDeque<Atom>,
 }
 
 #[derive(Clone, Copy, FromPrimitive, PartialEq, Eq, Debug)]
@@ -100,9 +102,9 @@ impl JumpKind {
 }
 
 impl IntMachine {
-    pub fn new(tape: Vec<i32>) -> IntMachine {
+    pub fn new(tape: Vec<Atom>) -> IntMachine {
         assert!(!tape.is_empty());
-        let first_op = Op::from_i32(tape[0]);
+        let first_op = Op::from_atom(tape[0]);
         IntMachine {
             tape,
             pc: 0,
@@ -127,7 +129,7 @@ impl IntMachine {
         print!("{} - {:?} ", self.pc, opcode);
         for i in 0..num_params {
             let param = self.tape[self.pc + (i as usize) + 1];
-            match self.cur_op.param_mode(u32::from(i)).unwrap() {
+            match self.cur_op.param_mode(i).unwrap() {
                 OpMode::Pos => print!(" {}@{}", self.tape[param as usize], param),
                 OpMode::Imm => print!(" {}", param),
             }
@@ -158,7 +160,7 @@ impl IntMachine {
             Some(OpCode::EndPgm) => self.handle_endpgm(),
             None => panic!("Unrecognized opcode: {}@{}", self.tape[self.pc], self.pc),
         };
-        self.cur_op = Op::from_i32(self.tape[self.pc]);
+        self.cur_op = Op::from_atom(self.tape[self.pc]);
         self.run_mode
     }
 
@@ -169,25 +171,25 @@ impl IntMachine {
         self.run_mode
     }
 
-    pub fn get_tape(&self) -> &[i32] {
+    pub fn get_tape(&self) -> &[Atom] {
         &self.tape
     }
 
-    pub fn feed_one(&mut self, value: i32) {
+    pub fn feed_one(&mut self, value: Atom) {
         if self.run_mode == RunMode::InputStalled {
             self.run_mode = RunMode::Running;
         }
         self.input.push_back(value);
     }
 
-    pub fn feed(&mut self, value: &[i32]) {
+    pub fn feed(&mut self, value: &[Atom]) {
         if self.run_mode == RunMode::InputStalled {
             self.run_mode = RunMode::Running;
         }
         self.input.extend(value);
     }
 
-    fn get_param(&self, param_idx: u8) -> i32 {
+    fn get_param(&self, param_idx: u8) -> Atom {
         let param_addr = self.tape[self.pc + (param_idx as usize) + 1];
         match self.cur_op.param_mode(param_idx.into()).unwrap() {
             OpMode::Pos => {
@@ -197,7 +199,7 @@ impl IntMachine {
             OpMode::Imm => param_addr,
         }
     }
-    fn set_param(&mut self, param_idx: u8, value: i32) {
+    fn set_param(&mut self, param_idx: u8, value: Atom) {
         let param_addr = self.tape[self.pc + (param_idx as usize) + 1];
         match self.cur_op.param_mode(param_idx.into()).unwrap() {
             OpMode::Pos => {
@@ -218,11 +220,11 @@ impl IntMachine {
         assert!(self.tape.len() >= self.pc + 4);
         let val_1 = self.get_param(0);
         let val_2 = self.get_param(1);
-        let res: i32 = match kind {
+        let res: Atom = match kind {
             AluKind::Add => val_1 + val_2,
             AluKind::Mult => val_1 * val_2,
-            AluKind::LessThan => (val_1 < val_2) as i32,
-            AluKind::Equals => (val_1 == val_2) as i32,
+            AluKind::LessThan => (val_1 < val_2) as Atom,
+            AluKind::Equals => (val_1 == val_2) as Atom,
         };
         self.dbg(3, Some(res));
 
@@ -305,22 +307,22 @@ mod tests {
             let mut cpu = IntMachine::new(vec![3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8]);
             cpu.input.push_back(num);
             cpu.run();
-            assert_eq!(cpu.output, vec!((num == 8) as i32));
+            assert_eq!(cpu.output, vec!((num == 8) as Atom));
             let mut cpu = IntMachine::new(vec![3, 3, 1108, -1, 8, 3, 4, 3, 99]);
             cpu.input.push_back(num);
             cpu.run();
-            assert_eq!(cpu.output, vec!((num == 8) as i32));
+            assert_eq!(cpu.output, vec!((num == 8) as Atom));
         }
         // checks if less than 8
         for num in vec![7, 8] {
             let mut cpu = IntMachine::new(vec![3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8]);
             cpu.input.push_back(num);
             cpu.run();
-            assert_eq!(cpu.output, vec!((num < 8) as i32));
+            assert_eq!(cpu.output, vec!((num < 8) as Atom));
             let mut cpu = IntMachine::new(vec![3, 3, 1107, -1, 8, 3, 4, 3, 99]);
             cpu.input.push_back(num);
             cpu.run();
-            assert_eq!(cpu.output, vec!((num < 8) as i32));
+            assert_eq!(cpu.output, vec!((num < 8) as Atom));
         }
     }
     #[test]

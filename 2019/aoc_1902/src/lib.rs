@@ -75,9 +75,9 @@ value 2. What value is left at position 0 after the program halts?
 
 */
 
-use intcode::IntMachine;
+use intcode::{Atom, IntMachine};
 pub fn aoc2a_run(tape: Vec<u32>) -> Vec<u32> {
-    let mut cpu = IntMachine::new(tape.iter().map(|i| *i as i32).collect());
+    let mut cpu = IntMachine::new(tape.iter().map(|i| *i as Atom).collect());
     cpu.run();
     cpu.get_tape().iter().map(|i| *i as u32).collect()
 }

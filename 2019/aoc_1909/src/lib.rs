@@ -3,6 +3,7 @@ extern crate intcode;
 #[cfg(test)]
 mod tests {
     use intcode::{IntMachine, RunMode};
+    use std::str::FromStr;
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);

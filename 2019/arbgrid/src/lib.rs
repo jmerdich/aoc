@@ -57,8 +57,8 @@ where
     }
 
     pub fn get_mut(&mut self, loc: Coord2D) -> &mut T {
-        let default = self.default.clone(); // separate to appease clippy
-        self.map.entry(loc).or_insert(default)
+        let default = &self.default;
+        self.map.entry(loc).or_insert_with(|| default.clone())
     }
 
     pub fn insert(&mut self, loc: Coord2D, value: T) -> Option<T> {

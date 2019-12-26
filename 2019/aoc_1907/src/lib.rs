@@ -122,14 +122,12 @@ pub fn amplify(tape: Vec<Atom>, inputs: Vec<Atom>) -> Atom {
 pub fn get_highest_amp(tape: Vec<Atom>, size: usize) -> Option<Atom> {
     let mut options: Vec<Atom> = (0..size as Atom).collect();
     let heap = Heap::new(&mut options);
-    heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
-        .max()
+    heap.map(|inputs| amplify(tape.clone(), inputs)).max()
 }
 pub fn get_highest_amp_loop(tape: Vec<Atom>, size: usize) -> Option<Atom> {
     let mut options: Vec<Atom> = ((size as Atom)..(size * 2) as Atom).collect();
     let heap = Heap::new(&mut options);
-    heap.map(|inputs| amplify(tape.clone(), inputs.clone()))
-        .max()
+    heap.map(|inputs| amplify(tape.clone(), inputs)).max()
 }
 
 #[cfg(test)]

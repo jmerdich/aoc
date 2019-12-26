@@ -75,7 +75,7 @@ where
         self.map.insert(loc, value)
     }
 
-    pub fn to_string(&self, convert_fn: &Fn(&T, Coord2D) -> char) -> String {
+    pub fn to_string(&self, convert_fn: &dyn Fn(&T, Coord2D) -> char) -> String {
         if self.min.is_none() || self.max.is_none() {
             return "".to_string();
         }
@@ -103,7 +103,7 @@ where
     pub fn from_str(
         origin: Coord2D,
         s: &str,
-        convert_fn: &Fn(char, Coord2D) -> Option<T>,
+        convert_fn: &dyn Fn(char, Coord2D) -> Option<T>,
     ) -> ArbGrid<T>
     where
         T: Default,

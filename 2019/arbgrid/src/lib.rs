@@ -89,6 +89,20 @@ where
         }
         out
     }
+    pub fn to_string_ogl(&self, convert_fn: &dyn Fn(&T, Coord2D) -> char) -> String {
+        if self.min.is_none() || self.max.is_none() {
+            return "".to_string();
+        }
+        let mut out = String::new();
+        for y in self.min.unwrap().1..=self.max.unwrap().1 {
+            for x in self.min.unwrap().0..=self.max.unwrap().0 {
+                let loc = Coord2D(x, y);
+                out.push(convert_fn(self.get(loc), loc));
+            }
+            out.push('\n');
+        }
+        out
+    }
 
     pub fn trim(&mut self) {
         let old_map = std::mem::replace(&mut self.map, BTreeMap::new());
@@ -110,9 +124,30 @@ where
     {
         let mut out = ArbGrid::new(T::default());
         let lines: Vec<&str> = s.lines().collect();
-        let y_0 = lines.len(); // We start here and subtract, since we orient it in the bottom-left.
+        let y_0 = lines.len() - 1; // We start here and subtract, since we orient it in the bottom-left.
         for (i, line) in lines.iter().enumerate() {
             let y = y_0 - i;
+            for (x, c) in line.chars().enumerate() {
+                let loc = Coord2D(x as i32 + origin.0, y as i32 + origin.1);
+                let res = convert_fn(c, loc);
+                if let Some(cell) = res {
+                    out.insert(loc, cell);
+                }
+            }
+        }
+        out
+    }
+    pub fn from_str_ogl(
+        origin: Coord2D,
+        s: &str,
+        convert_fn: &dyn Fn(char, Coord2D) -> Option<T>,
+    ) -> ArbGrid<T>
+    where
+        T: Default,
+    {
+        let mut out = ArbGrid::new(T::default());
+        let lines: Vec<&str> = s.lines().collect();
+        for (y, line) in lines.iter().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 let loc = Coord2D(x as i32 + origin.0, y as i32 + origin.1);
                 let res = convert_fn(c, loc);
@@ -132,8 +167,11 @@ where
         }
     }
 
-    pub fn iter(&self) -> impl Iterator + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = (&Coord2D, &T)> + '_ {
         self.map.iter()
+    }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&Coord2D, &mut T)> + '_ {
+        self.map.iter_mut() // Safe because the keys aren't getting changed
     }
 }
 

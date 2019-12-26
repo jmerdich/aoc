@@ -144,7 +144,7 @@ mod tests {
  #  # # #  #    #  # #  # #    #    # #
   ### #  # ####  ##  #  # #### #    #  #";
 
-        let expected_grid = ArbGrid::from_str(Coord2D(0, -6), expected_str, &|c, _xy| match c {
+        let expected_grid = ArbGrid::from_str(Coord2D(0, -5), expected_str, &|c, _xy| match c {
             ' ' => None,
             '#' => Some(Color::White),
             _ => panic!(),

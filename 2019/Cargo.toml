@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "arbgrid",
     "intcode",
     "aoc_1901",
     "aoc_1902",
@@ -11,4 +12,5 @@ members = [
     "aoc_1907",
     "aoc_1908",
     "aoc_1909",
+    "aoc_1911",
 ]

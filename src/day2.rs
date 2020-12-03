@@ -3,8 +3,7 @@ use regex::Regex;
 pub struct PassAndPolicy {
     pub password: String,
     pub letter: char,
-    pub min: usize,
-    pub max: usize
+    pub range: (usize, usize)
 }
 
 
@@ -16,8 +15,8 @@ pub fn input_generator(input: &str) -> Vec<PassAndPolicy> {
         PassAndPolicy{
             password: caps.get(4).unwrap().as_str().to_string(),
             letter: caps.get(3).unwrap().as_str().parse().unwrap(),
-            min: caps.get(1).unwrap().as_str().parse().unwrap(),
-            max: caps.get(2).unwrap().as_str().parse().unwrap()
+            range: (caps.get(1).unwrap().as_str().parse().unwrap(),
+                    caps.get(2).unwrap().as_str().parse().unwrap())
         }
     }).collect()
 }
@@ -26,13 +25,17 @@ pub fn input_generator(input: &str) -> Vec<PassAndPolicy> {
 pub fn solve_part1(input: &[PassAndPolicy]) -> usize {
     input.iter().filter(|p| {
         let count = p.password.chars().filter(|c| *c == p.letter).count();
-        count >= p.min && count <= p.max
+        count >= p.range.0 && count <= p.range.1
     }).count()
 }
 
 #[aoc(day2, part2)]
-pub fn solve_part2(input: &[PassAndPolicy]) -> i64 {
-    panic!("No solution?");
+pub fn solve_part2(input: &[PassAndPolicy]) -> usize {
+    input.iter().filter(|p| {
+        let char_a = p.password.chars().nth(p.range.0-1).unwrap();
+        let char_b = p.password.chars().nth(p.range.1-1).unwrap();
+        (p.letter == char_a) ^ (p.letter == char_b)
+    }).count()
 }
 
 #[cfg(test)]
@@ -48,6 +51,11 @@ mod test {
     fn eg_part1() {
         let content = input_generator(EG_INPUT);
         assert_eq!(solve_part1(&content), 2);
+    }
+    #[test]
+    fn eg_part2() {
+        let content = input_generator(EG_INPUT);
+        assert_eq!(solve_part2(&content), 1);
     }
 
 }

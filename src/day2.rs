@@ -56,6 +56,7 @@ mod test {
 1-3 a: abcde
 1-3 b: cdefg
 2-9 c: ccccccccc";
+    const INPUT: &str = include_str!("../input/2020/day2.txt");
 
     #[test]
     fn eg_part1() {
@@ -66,5 +67,15 @@ mod test {
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
         assert_eq!(solve_part2(&content), 1);
+    }
+    #[test]
+    fn part1() {
+        let content = input_generator(INPUT);
+        assert_eq!(solve_part1(&content), 536);
+    }
+    #[test]
+    fn part2() {
+        let content = input_generator(INPUT);
+        assert_eq!(solve_part2(&content), 558);
     }
 }

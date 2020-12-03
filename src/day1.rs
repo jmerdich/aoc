@@ -43,6 +43,8 @@ mod test {
 675
 1456";
 
+    const INPUT: &str = include_str!("../input/2020/day1.txt");
+
     #[test]
     fn eg_part1() {
         let content = input_generator(EG_INPUT);
@@ -55,5 +57,19 @@ mod test {
         let content = input_generator(EG_INPUT);
         let res = solve_part2(&content);
         assert_eq!(res, 241861950);
+    }
+
+    #[test]
+    fn part1() {
+        let content = input_generator(INPUT);
+        let res = solve_part1(&content);
+        assert_eq!(res, 793524);
+    }
+
+    #[test]
+    fn part2() {
+        let content = input_generator(INPUT);
+        let res = solve_part2(&content);
+        assert_eq!(res, 61515678);
     }
 }

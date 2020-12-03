@@ -48,12 +48,11 @@ pub fn input_generator(input: &str) -> Map {
     }
 }
 
-#[aoc(day3, part1)]
-pub fn solve_part1(input: &Map) -> usize {
+fn traverse_path(map: &Map, velocity: (usize, usize)) -> usize {
     let mut loc: (usize, usize) = (0, 0);
     let mut hits = 0;
     loop {
-        match input.at_loc(loc) {
+        match map.at_loc(loc) {
             Some(GridSq::Ground) => {}
             Some(GridSq::Tree) => {
                 hits += 1;
@@ -62,14 +61,20 @@ pub fn solve_part1(input: &Map) -> usize {
                 break;
             }
         }
-        loc = (loc.0 + 3, loc.1 + 1);
+        loc = (loc.0 + velocity.0, loc.1 + velocity.1);
     }
     hits
 }
 
+#[aoc(day3, part1)]
+pub fn solve_part1(input: &Map) -> usize {
+    traverse_path(input, (3, 1))
+}
+
 #[aoc(day3, part2)]
 pub fn solve_part2(input: &Map) -> usize {
-    0
+    let paths = vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    paths.iter().map(|p| traverse_path(input, *p)).product()
 }
 
 #[cfg(test)]
@@ -98,7 +103,7 @@ mod test {
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 336);
     }
     #[test]
     fn part1() {
@@ -108,6 +113,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 5522401584);
     }
 }

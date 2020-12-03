@@ -21,8 +21,7 @@ pub fn solve_part2(input: &[i64]) -> i64 {
         let v_i = input[i];
         for j in (i + 1)..input.len() {
             let v_j = input[j];
-            for k in (j + 1)..input.len() {
-                let v_k = input[k];
+            for v_k in input.iter().skip(j + 1) {
                 if v_i + v_j + v_k == 2020 {
                     return v_i * v_j * v_k;
                 }
@@ -36,7 +35,7 @@ pub fn solve_part2(input: &[i64]) -> i64 {
 mod test {
     use super::*;
 
-    const EG_INPUT: &str= "\
+    const EG_INPUT: &str = "\
 1721
 979
 366

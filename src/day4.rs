@@ -37,7 +37,7 @@ impl Id {
             return false;
         }
 
-        if !(1920..=2002).contains(&self.birth_year.unwrap()){ 
+        if !(1920..=2002).contains(&self.birth_year.unwrap()) {
             return false;
         }
         if !(2010..=2020).contains(&self.issue_year.unwrap()) {

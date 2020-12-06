@@ -1,5 +1,3 @@
-#![allow(unused_variables, dead_code)]
-
 pub struct Group {
     pub people: Vec<Person>,
 }
@@ -12,11 +10,17 @@ impl Group {
         self.people.is_empty()
     }
 
-    pub fn get_ans(&self, c: char) -> bool {
+    pub fn get_ans_any(&self, c: char) -> bool {
         self.people.iter().any(|p| p.get_ans(c))
     }
-    pub fn get_ans_count(&self) -> usize {
-        ('a'..='z').filter(|c| self.get_ans(*c)).count()
+    pub fn get_ans_any_count(&self) -> usize {
+        ('a'..='z').filter(|c| self.get_ans_any(*c)).count()
+    }
+    pub fn get_ans_all(&self, c: char) -> bool {
+        self.people.iter().all(|p| p.get_ans(c))
+    }
+    pub fn get_ans_all_count(&self) -> usize {
+        ('a'..='z').filter(|c| self.get_ans_all(*c)).count()
     }
 }
 
@@ -78,12 +82,12 @@ pub fn input_generator(input: &str) -> Vec<Group> {
 
 #[aoc(day6, part1)]
 pub fn solve_part1(input: &[Group]) -> usize {
-    input.iter().map(|g| g.get_ans_count()).sum()
+    input.iter().map(|g| g.get_ans_any_count()).sum()
 }
 
 #[aoc(day6, part2)]
 pub fn solve_part2(input: &[Group]) -> usize {
-    0
+    input.iter().map(|g| g.get_ans_all_count()).sum()
 }
 
 #[cfg(test)]
@@ -121,7 +125,7 @@ b";
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 6);
     }
     #[test]
     fn part1() {
@@ -131,6 +135,6 @@ b";
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 3628);
     }
 }

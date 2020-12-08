@@ -1,14 +1,20 @@
-use internship::IStr;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
+use std::sync::Mutex;
+use string_interner::{DefaultSymbol, StringInterner};
+
+type Sym = DefaultSymbol;
+lazy_static! {
+    static ref INTERN: Mutex<StringInterner<Sym>> = Mutex::new(StringInterner::new());
+}
 
 pub struct Container {
-    contents: Vec<(usize, IStr)>,
+    contents: Vec<(usize, Sym)>,
 }
 
 #[aoc_generator(day7)]
-pub fn input_generator(input: &str) -> HashMap<IStr, Container> {
-    let mut map: HashMap<IStr, Container> = HashMap::new();
+pub fn input_generator(input: &str) -> HashMap<Sym, Container> {
+    let mut map: HashMap<Sym, Container> = HashMap::new();
 
     input.lines().for_each(|l| {
         let mut cont = Container {
@@ -22,24 +28,27 @@ pub fn input_generator(input: &str) -> HashMap<IStr, Container> {
                     .trim_end_matches('s')
                     .trim_end_matches(" bag");
                 let (num, color) = s.splitn(2, ' ').collect_tuple().unwrap();
-                cont.contents.push((num.parse().unwrap(), IStr::new(color)));
+                cont.contents.push((
+                    num.parse().unwrap(),
+                    INTERN.lock().unwrap().get_or_intern(color),
+                ));
             });
         }
-        let old = map.insert(IStr::new(name), cont);
+        let old = map.insert(INTERN.lock().unwrap().get_or_intern(name), cont);
         assert!(old.is_none());
     });
     map
 }
 
-fn get_parents(input: &HashMap<IStr, Container>) -> HashMap<IStr, Vec<IStr>> {
-    let mut out: HashMap<IStr, Vec<IStr>> = HashMap::new();
+fn get_parents(input: &HashMap<Sym, Container>) -> HashMap<Sym, Vec<Sym>> {
+    let mut out: HashMap<Sym, Vec<Sym>> = HashMap::new();
 
     for (parent, conts) in input.iter() {
         for cont in &conts.contents {
             if let Some(parents) = out.get_mut(&cont.1) {
-                parents.push(parent.clone());
+                parents.push(*parent);
             } else {
-                out.insert(cont.1.clone(), vec![parent.clone()]);
+                out.insert(cont.1, vec![*parent]);
             }
         }
     }
@@ -47,14 +56,18 @@ fn get_parents(input: &HashMap<IStr, Container>) -> HashMap<IStr, Vec<IStr>> {
 }
 
 #[aoc(day7, part1)]
-pub fn solve_part1(input: &HashMap<IStr, Container>) -> usize {
-    let mut possible_conts: HashSet<IStr> = HashSet::new();
+pub fn solve_part1(input: &HashMap<Sym, Container>) -> usize {
+    let mut possible_conts: HashSet<Sym> = HashSet::new();
 
     let inverted_conts = get_parents(input);
-    possible_conts.extend(inverted_conts["shiny gold"].clone().into_iter());
+    possible_conts.extend(
+        inverted_conts[&INTERN.lock().unwrap().get_or_intern_static("shiny gold")]
+            .clone()
+            .into_iter(),
+    );
 
     let mut old_size = 0;
-    let mut new_res: Vec<IStr> = possible_conts.iter().cloned().collect();
+    let mut new_res: Vec<Sym> = possible_conts.iter().cloned().collect();
     while old_size != possible_conts.len() {
         old_size = possible_conts.len();
         new_res = new_res
@@ -67,20 +80,23 @@ pub fn solve_part1(input: &HashMap<IStr, Container>) -> usize {
     possible_conts.len()
 }
 
-fn count_nested_bags(input: &HashMap<IStr, Container>, name: &str) -> usize {
+fn count_nested_bags(input: &HashMap<Sym, Container>, name: Sym) -> usize {
     input
-        .get(name)
+        .get(&name)
         .unwrap()
         .contents
         .iter()
-        .map(|(n, subbag)| n * count_nested_bags(input, subbag))
+        .map(|(n, subbag)| n * count_nested_bags(input, *subbag))
         .sum::<usize>()
         + 1
 }
 
 #[aoc(day7, part2)]
-pub fn solve_part2(input: &HashMap<IStr, Container>) -> usize {
-    count_nested_bags(input, "shiny gold") - 1
+pub fn solve_part2(input: &HashMap<Sym, Container>) -> usize {
+    count_nested_bags(
+        input,
+        INTERN.lock().unwrap().get_or_intern_static("shiny gold"),
+    ) - 1
 }
 
 #[cfg(test)]
@@ -111,7 +127,7 @@ dark violet bags contain no other bags.";
     fn parser() {
         let content1 = input_generator(EG_INPUT);
         assert_eq!(content1.len(), 9);
-        let content2 = input_generator(INPUT);
+        input_generator(INPUT);
     }
 
     #[test]

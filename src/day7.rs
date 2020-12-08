@@ -1,13 +1,14 @@
+use internship::IStr;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 pub struct Container {
-    contents: Vec<(usize, String)>,
+    contents: Vec<(usize, IStr)>,
 }
 
 #[aoc_generator(day7)]
-pub fn input_generator(input: &str) -> HashMap<String, Container> {
-    let mut map: HashMap<String, Container> = HashMap::new();
+pub fn input_generator(input: &str) -> HashMap<IStr, Container> {
+    let mut map: HashMap<IStr, Container> = HashMap::new();
 
     input.lines().for_each(|l| {
         let mut cont = Container {
@@ -21,25 +22,24 @@ pub fn input_generator(input: &str) -> HashMap<String, Container> {
                     .trim_end_matches('s')
                     .trim_end_matches(" bag");
                 let (num, color) = s.splitn(2, ' ').collect_tuple().unwrap();
-                cont.contents
-                    .push((num.parse().unwrap(), color.to_string()));
+                cont.contents.push((num.parse().unwrap(), IStr::new(color)));
             });
         }
-        let old = map.insert(name.to_string(), cont);
+        let old = map.insert(IStr::new(name), cont);
         assert!(old.is_none());
     });
     map
 }
 
-fn get_parents(input: &HashMap<String, Container>) -> HashMap<String, Vec<String>> {
-    let mut out: HashMap<String, Vec<String>> = HashMap::new();
+fn get_parents(input: &HashMap<IStr, Container>) -> HashMap<IStr, Vec<IStr>> {
+    let mut out: HashMap<IStr, Vec<IStr>> = HashMap::new();
 
     for (parent, conts) in input.iter() {
         for cont in &conts.contents {
             if let Some(parents) = out.get_mut(&cont.1) {
-                parents.push(parent.to_string());
+                parents.push(parent.clone());
             } else {
-                out.insert(cont.1.to_string(), vec![parent.to_string()]);
+                out.insert(cont.1.clone(), vec![parent.clone()]);
             }
         }
     }
@@ -47,14 +47,14 @@ fn get_parents(input: &HashMap<String, Container>) -> HashMap<String, Vec<String
 }
 
 #[aoc(day7, part1)]
-pub fn solve_part1(input: &HashMap<String, Container>) -> usize {
-    let mut possible_conts: HashSet<String> = HashSet::new();
+pub fn solve_part1(input: &HashMap<IStr, Container>) -> usize {
+    let mut possible_conts: HashSet<IStr> = HashSet::new();
 
     let inverted_conts = get_parents(input);
     possible_conts.extend(inverted_conts["shiny gold"].clone().into_iter());
 
     let mut old_size = 0;
-    let mut new_res: Vec<String> = possible_conts.iter().cloned().collect();
+    let mut new_res: Vec<IStr> = possible_conts.iter().cloned().collect();
     while old_size != possible_conts.len() {
         old_size = possible_conts.len();
         new_res = new_res
@@ -67,7 +67,7 @@ pub fn solve_part1(input: &HashMap<String, Container>) -> usize {
     possible_conts.len()
 }
 
-fn count_nested_bags(input: &HashMap<String, Container>, name: &str) -> usize {
+fn count_nested_bags(input: &HashMap<IStr, Container>, name: &str) -> usize {
     input
         .get(name)
         .unwrap()
@@ -79,7 +79,7 @@ fn count_nested_bags(input: &HashMap<String, Container>, name: &str) -> usize {
 }
 
 #[aoc(day7, part2)]
-pub fn solve_part2(input: &HashMap<String, Container>) -> usize {
+pub fn solve_part2(input: &HashMap<IStr, Container>) -> usize {
     count_nested_bags(input, "shiny gold") - 1
 }
 

@@ -54,13 +54,14 @@ pub fn solve_part1(input: &HashMap<String, Container>) -> usize {
     possible_conts.extend(inverted_conts["shiny gold"].clone().into_iter());
 
     let mut old_size = 0;
+    let mut new_res: Vec<String> = possible_conts.iter().cloned().collect();
     while old_size != possible_conts.len() {
         old_size = possible_conts.len();
-        let new_res: Vec<String> = possible_conts
+        new_res = new_res
             .iter()
             .flat_map(|s| inverted_conts.get(s).unwrap_or(&vec![]).clone().into_iter())
             .collect();
-        possible_conts.extend(new_res);
+        possible_conts.extend(new_res.clone());
     }
 
     possible_conts.len()

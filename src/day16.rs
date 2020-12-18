@@ -128,14 +128,14 @@ pub fn get_valid_tickets(content: &Content) -> Vec<&Vec<u32>> {
         .collect();
 
     assert!(valid_tickets.iter().map(|t| t.len()).all_equal());
-    assert!(valid_tickets.len() > 0);
+    assert!(!valid_tickets.is_empty());
 
     valid_tickets
 }
 
 pub fn solve_for_fields<'a>(
-    all_options: &Vec<&'a str>,
-    field_options: &Vec<Vec<&'a str>>,
+    all_options: &[&'a str],
+    field_options: &[Vec<&'a str>],
 ) -> Vec<&'a str> {
     let z3_conf = z3::Config::new();
     let z3_ctx = z3::Context::new(&z3_conf);
@@ -168,7 +168,7 @@ pub fn solve_for_fields<'a>(
     for (slot, opts) in slots.iter().zip(field_options.iter()) {
         let preds: Vec<_> = opts
             .iter()
-            .map(|name| checker_map[*name].apply(&vec![&ast::Dynamic::from_ast(slot)]))
+            .map(|name| checker_map[*name].apply(&[&ast::Dynamic::from_ast(slot)]))
             .map(|d| d.as_bool().unwrap())
             .collect();
         solver.assert(&ast::Bool::or(&z3_ctx, &preds.iter().collect::<Vec<_>>()));
@@ -181,7 +181,12 @@ pub fn solve_for_fields<'a>(
     let results: Vec<_> = slots
         .iter()
         .map(|sl| model.eval(sl).unwrap())
-        .map(|sym| field_consts.iter().position(|fc| fc.apply(&[]).as_datatype().unwrap() == sym).unwrap())
+        .map(|sym| {
+            field_consts
+                .iter()
+                .position(|fc| fc.apply(&[]).as_datatype().unwrap() == sym)
+                .unwrap()
+        })
         .map(|i| all_options[i])
         .collect();
     results
@@ -194,7 +199,7 @@ pub fn solve_part2(input: &Content) -> u64 {
     let field_options = get_all_opts(&input.fields, &valid_tickets);
 
     let field_names = solve_for_fields(
-        &input.fields.keys().map(|s| s.as_str()).collect(),
+        &input.fields.keys().map(|s| s.as_str()).collect::<Vec<_>>(),
         &field_options,
     );
 

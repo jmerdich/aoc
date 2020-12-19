@@ -83,7 +83,7 @@ pub fn solve_part1(input: &Content) -> u32 {
 
 pub fn get_all_opts<'a>(
     fields: &'a HashMap<String, Vec<(u32, u32)>>,
-    valid_tickets: &Vec<&Vec<u32>>,
+    valid_tickets: &[&Vec<u32>],
 ) -> Vec<Vec<&'a str>> {
     let mut field_options: Vec<Vec<&str>> = Vec::new();
 
@@ -91,19 +91,10 @@ pub fn get_all_opts<'a>(
         let mut options: Vec<&str> = Vec::new();
 
         for (name, ranges) in fields {
-            //dbg!(name, ranges);
-            if valid_tickets.iter().all(|t| {
-                ranges.iter().any(|(s, e)| {
-                    //println!(
-                    //    "{} in ({}..={})? {})",
-                    //    t[idx],
-                    //    s,
-                    //    e,
-                    //    t[idx] >= *s && t[idx] <= *e
-                    //);
-                    t[idx] >= *s && t[idx] <= *e
-                })
-            }) {
+            let is_possible = valid_tickets.iter().all(|t| {
+                ranges.iter().any(|(s, e)| t[idx] >= *s && t[idx] <= *e )
+            });
+            if is_possible {
                 options.push(name);
             }
         }

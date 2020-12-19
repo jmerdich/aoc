@@ -91,9 +91,9 @@ pub fn get_all_opts<'a>(
         let mut options: Vec<&str> = Vec::new();
 
         for (name, ranges) in fields {
-            let is_possible = valid_tickets.iter().all(|t| {
-                ranges.iter().any(|(s, e)| t[idx] >= *s && t[idx] <= *e )
-            });
+            let is_possible = valid_tickets
+                .iter()
+                .all(|t| ranges.iter().any(|(s, e)| t[idx] >= *s && t[idx] <= *e));
             if is_possible {
                 options.push(name);
             }

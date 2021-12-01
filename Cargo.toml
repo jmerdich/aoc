@@ -1,18 +1,5 @@
-[package]
-name = "jmerdich_aoc_20"
-version = "0.1.0"
-authors = ["Jake Merdich <jake@merdich.com>"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-aoc-runner = "0.3.0"
-aoc-runner-derive = "0.3.0"
-regex = "1.4.2"
-lazy_static = "1.4.0"
-itertools = "0.9.0"
-string-interner = "0.12.1"
-array2d = "0.2.1"
-bitintr = "0.3.0"
-z3 = "0.9.0"
+members = [
+    "2020"
+]

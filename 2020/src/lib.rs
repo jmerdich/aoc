@@ -20,6 +20,7 @@ mod day12;
 mod day13;
 mod day14;
 mod day15;
+#[cfg(feature = "z3")]
 mod day16;
 
 aoc_lib! { year = 2020 }

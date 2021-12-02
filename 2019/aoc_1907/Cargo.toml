@@ -1,0 +1,10 @@
+[package]
+name = "aoc_1907"
+version = "0.1.0"
+authors = ["Jake Merdich <jake@merdich.com>"]
+edition = "2018"
+
+[dependencies]
+intcode = { path = "../intcode" }
+permutohedron = "0.2.4"
+

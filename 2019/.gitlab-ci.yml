@@ -1,0 +1,20 @@
+image: "rust:latest"
+
+lint:fmt:
+    # Some of the rustfmt options aren't available on stable
+    image: rustlang/rust:nightly
+    script:
+        - rustc --version && cargo --version && cargo +nightly fmt --version
+        - cargo +nightly fmt --all -- --check
+
+lint:clippy:
+    script:
+        - rustup component add clippy
+        - rustc --version && cargo --version && cargo clippy --version
+        - cargo clippy -- --deny warnings
+
+# Use cargo to test the project
+test:cargo:
+    script:
+        - rustc --version && cargo --version  # Print version info for debugging
+        - cargo test --all --verbose

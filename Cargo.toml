@@ -1,9 +1,6 @@
 [workspace]
 
 members = [
-    "2020"
-]
-
-exclude = [
+    "2020",
     "2021"
 ]

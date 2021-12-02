@@ -1,4 +1,4 @@
-#![allow(unused_variables, dead_code)]
+#![allow(unused_variables, dead_code, clippy::upper_case_acronyms)]
 use itertools::Itertools;
 
 #[derive(Debug, Clone)]
@@ -36,7 +36,7 @@ impl Mach {
     fn from_str(s: &str) -> Option<Mach> {
         let mut insts: Vec<Inst> = s
             .lines()
-            .map(|l| Inst::from_str(l))
+            .map(Inst::from_str)
             .collect::<Option<Vec<Inst>>>()?;
         insts.push(Inst::END);
         let mut hitmap: Vec<u32> = Vec::new();

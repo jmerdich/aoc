@@ -42,7 +42,7 @@ impl Seat {
 
 #[aoc_generator(day5)]
 pub fn input_generator(input: &str) -> Vec<Seat> {
-    let seats: Option<Vec<Seat>> = input.lines().map(|l| Seat::from_bsp(l)).collect();
+    let seats: Option<Vec<Seat>> = input.lines().map(Seat::from_bsp).collect();
     seats.unwrap()
 }
 

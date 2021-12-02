@@ -25,7 +25,7 @@ pub struct Content {
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Vec<Content> {
     input.lines().map(|l| {
-        let strs: Vec<&str> = l.split(" ").collect();
+        let strs: Vec<&str> = l.split(' ').collect();
         Content {
             dir: Dir::from_str(strs[0]).unwrap(),
             count: strs[1].parse().unwrap()

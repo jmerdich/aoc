@@ -51,15 +51,15 @@ impl Id {
             return false;
         }
 
-        if !PASS_RE.is_match(&self.passport_id.as_ref().unwrap()) {
+        if !PASS_RE.is_match(self.passport_id.as_ref().unwrap()) {
             return false;
         }
 
-        if !HAIR_RE.is_match(&self.hair_color.as_ref().unwrap()) {
+        if !HAIR_RE.is_match(self.hair_color.as_ref().unwrap()) {
             return false;
         }
 
-        if let Some(caps) = HEIGHT_RE.captures(&self.height.as_ref().unwrap()) {
+        if let Some(caps) = HEIGHT_RE.captures(self.height.as_ref().unwrap()) {
             let val: u32 = caps.get(1).unwrap().as_str().parse().unwrap();
 
             match caps.get(2).unwrap().as_str() {

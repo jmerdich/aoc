@@ -2,60 +2,69 @@
 
 #[derive(Debug, Clone)]
 pub struct Content {
-    pub counts: [u64; 10]
+    pub counts: [u64; 10],
+}
+
+impl Content {
+    pub fn count_zeros(&self) -> usize {
+        self.counts[0] as usize
+    }
+
+    pub fn age(&mut self) {
+        let mut counts: [u64; 10] = [0; 10];
+        counts[6] += self.counts[0];
+        for n in 1..10 {
+            counts[n - 1] += self.counts[n];
+        }
+        self.counts = counts;
+    }
+
+    pub fn spawn_new(&mut self, count: usize) {
+        self.counts[8] += count as u64;
+    }
+
+    pub fn sim_fish(&mut self, days: usize) {
+        for day in 0..days {
+            let to_add = self.count_zeros();
+            self.age();
+            self.spawn_new(to_add);
+        }
+    }
+
+    pub fn count(&self) -> usize {
+        self.counts.iter().sum::<u64>() as usize
+    }
+
+    pub fn from_ages(ages: &[u64]) -> Self {
+        let mut counts: [u64; 10] = [0; 10];
+        for n in 0..10 {
+            counts[n] = ages.iter().filter(|v| **v == n as u64).count() as u64;
+        }
+        Content { counts }
+    }
 }
 
 #[aoc_generator(day6)]
 pub fn input_generator(input: &str) -> Content {
-    let ages: Vec<u64> = input.split(",").map(|n| n.trim().parse().unwrap()).collect();
-    let mut counts : [u64; 10] = [0; 10];
-    for n in 0..10 {
-        counts[n] = ages.iter().filter(|v| **v == n as u64).count() as u64;
-    }
-    Content { counts }
-}
-
-pub fn count_zeros(input: &Content) -> usize {
-    input.counts[0] as usize
-}
-
-pub fn age(input: &mut Content) {
-    let mut counts : [u64; 10] = [0; 10];
-    counts[6] += input.counts[0];
-    for n in 1..10 {
-        counts[n-1] += input.counts[n];
-    };
-    input.counts = counts;
-}
-
-pub fn spawn_new(input: &mut Content, count: usize) {
-    input.counts[8] += count as u64;
-}
-
-pub fn sim_fish(input: &mut Content, days: usize) {
-    for day in 0..days {
-        let to_add = count_zeros(input);
-        age(input);
-        spawn_new(input, to_add);
-    }
-}
-
-pub fn count(input: &Content) -> usize {
-    input.counts.iter().sum::<u64>() as usize
+    let ages: Vec<u64> = input
+        .split(",")
+        .map(|n| n.trim().parse().unwrap())
+        .collect();
+    Content::from_ages(&ages)
 }
 
 #[aoc(day6, part1)]
 pub fn solve_part1(input: &Content) -> usize {
     let mut input = input.clone();
-    sim_fish(&mut input, 80);
-    count(&input)
+    input.sim_fish(80);
+    input.count()
 }
 
 #[aoc(day6, part2)]
 pub fn solve_part2(input: &Content) -> usize {
     let mut input = input.clone();
-    sim_fish(&mut input, 256);
-    count(&input)
+    input.sim_fish(256);
+    input.count()
 }
 
 #[cfg(test)]

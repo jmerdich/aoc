@@ -1,23 +1,31 @@
 #![allow(unused_variables, dead_code)]
 
 #[derive(Clone, Debug)]
-pub struct Content{
+pub struct Content {
     pub vals: Vec<u32>,
-    pub bits: u32
+    pub bits: u32,
 }
 const MAX_BITS: u32 = 5;
 
 impl Content {
     fn common_for_bit_le(&self, bit: u32) -> u32 {
         let count: u32 = self.vals.iter().map(|n| (n >> bit) & 1).sum();
-        if count as usize * 2 >= self.vals.len() {1} else {0}
+        if count as usize * 2 >= self.vals.len() {
+            1
+        } else {
+            0
+        }
     }
     fn common_for_bit(&self, bit: u32) -> u32 {
         self.common_for_bit_le(self.inv_bit(bit))
     }
     fn uncommon_for_bit_le(&self, bit: u32) -> u32 {
         let count: u32 = self.vals.iter().map(|n| (n >> bit) & 1).sum();
-        if count  as usize * 2 < self.vals.len() {1} else {0}
+        if count as usize * 2 < self.vals.len() {
+            1
+        } else {
+            0
+        }
     }
     fn uncommon_for_bit(&self, bit: u32) -> u32 {
         self.uncommon_for_bit_le(self.inv_bit(bit))
@@ -28,14 +36,24 @@ impl Content {
         let bit_mask = 1 << bit;
         let bit_val = self.common_for_bit_le(bit) << bit;
 
-        self.vals = self.vals.iter().filter(|v| (*v &  bit_mask) == bit_val).map(|v| *v).collect();
+        self.vals = self
+            .vals
+            .iter()
+            .filter(|v| (*v & bit_mask) == bit_val)
+            .map(|v| *v)
+            .collect();
     }
     fn discard_common_for_bit(&mut self, bit: u32) {
         let bit = self.inv_bit(bit);
         let bit_mask = 1 << bit;
         let bit_val = self.uncommon_for_bit_le(bit) << bit;
 
-        self.vals = self.vals.iter().filter(|v| (*v &  bit_mask) == bit_val).map(|v| *v).collect();
+        self.vals = self
+            .vals
+            .iter()
+            .filter(|v| (*v & bit_mask) == bit_val)
+            .map(|v| *v)
+            .collect();
     }
 
     fn inv_bit(&self, bit: u32) -> u32 {
@@ -84,12 +102,15 @@ fn co2_rate(mut v: Content) -> u32 {
 
 #[aoc_generator(day3)]
 pub fn input_generator(input: &str) -> Content {
-    let vals = input.lines().map(|s| (u32::from_str_radix(s, 2).unwrap())).collect();
+    let vals = input
+        .lines()
+        .map(|s| (u32::from_str_radix(s, 2).unwrap()))
+        .collect();
     let bits = input.lines().next().unwrap().len();
 
     Content {
         vals,
-        bits: bits as u32
+        bits: bits as u32,
     }
 }
 

@@ -3,7 +3,7 @@
 pub enum Dir {
     Forward,
     Up,
-    Down
+    Down,
 }
 
 impl Dir {
@@ -12,25 +12,28 @@ impl Dir {
             "forward" => Some(Dir::Forward),
             "up" => Some(Dir::Up),
             "down" => Some(Dir::Down),
-            _ => None
+            _ => None,
         }
     }
 }
 
 pub struct Content {
     dir: Dir,
-    count: u32
+    count: u32,
 }
 
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Vec<Content> {
-    input.lines().map(|l| {
-        let strs: Vec<&str> = l.split(' ').collect();
-        Content {
-            dir: Dir::from_str(strs[0]).unwrap(),
-            count: strs[1].parse().unwrap()
-        }
-    }).collect()
+    input
+        .lines()
+        .map(|l| {
+            let strs: Vec<&str> = l.split(' ').collect();
+            Content {
+                dir: Dir::from_str(strs[0]).unwrap(),
+                count: strs[1].parse().unwrap(),
+            }
+        })
+        .collect()
 }
 
 #[aoc(day2, part1)]
@@ -42,13 +45,13 @@ pub fn solve_part1(input: &[Content]) -> u32 {
         match mov.dir {
             Dir::Forward => {
                 hor += mov.count;
-            },
+            }
             Dir::Up => {
                 vert -= mov.count;
-            },
+            }
             Dir::Down => {
                 vert += mov.count;
-            },
+            }
         }
     }
     hor * vert
@@ -66,13 +69,13 @@ pub fn solve_part2(input: &[Content]) -> u32 {
             Dir::Forward => {
                 hor += count;
                 vert += count * aim;
-            },
+            }
             Dir::Up => {
                 aim -= count;
-            },
+            }
             Dir::Down => {
                 aim += count;
-            },
+            }
         }
     }
     (hor * vert) as u32

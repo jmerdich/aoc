@@ -150,6 +150,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 1662846);
     }
 }

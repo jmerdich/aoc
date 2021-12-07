@@ -1,17 +1,26 @@
 #![allow(unused_variables, dead_code)]
 
 pub struct Content {
-    posns: Vec<u32>
+    posns: Vec<u32>,
 }
 
 impl Content {
     fn fuel_for(&self, dest: u32) -> u32 {
-        let fuel = self.posns.iter().map(|p| (*p as i32 - dest as i32).abs() as u32).sum();
+        let fuel = self
+            .posns
+            .iter()
+            .map(|p| (*p as i32 - dest as i32).abs() as u32)
+            .sum();
         // println!("fuel for {}: {}", dest, fuel);
         fuel
     }
     fn fuel_for_exp(&self, dest: u32) -> u32 {
-        let fuel = self.posns.iter().map(|p| (*p as i32 - dest as i32).abs() as u32).map(|n| (n*(n+1))/2).sum();
+        let fuel = self
+            .posns
+            .iter()
+            .map(|p| (*p as i32 - dest as i32).abs() as u32)
+            .map(|n| (n * (n + 1)) / 2)
+            .sum();
         // println!("fuel for {}: {}", dest, fuel);
         fuel
     }
@@ -27,19 +36,29 @@ impl Content {
 #[aoc_generator(day7)]
 pub fn input_generator(input: &str) -> Content {
     Content {
-        posns: input.trim().split(',').map(|s| s.parse().unwrap()).collect()
+        posns: input
+            .trim()
+            .split(',')
+            .map(|s| s.parse().unwrap())
+            .collect(),
     }
 }
 
 #[aoc(day7, part1)]
 pub fn solve_part1(input: &Content) -> usize {
-    let best_fuel = (input.min()..=input.max()).map(|i| input.fuel_for(i)).min().unwrap();
+    let best_fuel = (input.min()..=input.max())
+        .map(|i| input.fuel_for(i))
+        .min()
+        .unwrap();
     best_fuel as usize
 }
 
 #[aoc(day7, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    let best_fuel = (input.min()..=input.max()).map(|i| input.fuel_for_exp(i)).min().unwrap();
+    let best_fuel = (input.min()..=input.max())
+        .map(|i| input.fuel_for_exp(i))
+        .min()
+        .unwrap();
     best_fuel as usize
 }
 

@@ -1,7 +1,7 @@
 #![allow(unused_variables, dead_code)]
 
-use std::convert::TryInto;
 use itertools::Itertools;
+use std::convert::TryInto;
 
 const NUM_TILES: usize = 25;
 
@@ -9,14 +9,14 @@ const NUM_TILES: usize = 25;
 pub struct Board {
     // All in row-major order
     tiles: [u32; NUM_TILES],
-    marked: [bool; NUM_TILES]
+    marked: [bool; NUM_TILES],
 }
 
 impl Board {
     fn from_tiles(tiles: &[u32]) -> Self {
         Self {
             tiles: tiles.try_into().unwrap(),
-            marked: [false; NUM_TILES]
+            marked: [false; NUM_TILES],
         }
     }
 
@@ -26,18 +26,22 @@ impl Board {
         }
     }
 
-    fn unmarked_tiles(&self) -> impl Iterator<Item=u32> + '_ {
-        self.tiles.iter().zip(self.marked).filter(|(t, m)| !m).map(|(t, m)| *t)
+    fn unmarked_tiles(&self) -> impl Iterator<Item = u32> + '_ {
+        self.tiles
+            .iter()
+            .zip(self.marked)
+            .filter(|(t, m)| !m)
+            .map(|(t, m)| *t)
     }
 
     fn winner(&self) -> bool {
         for row_i in 0..5 {
-            if self.marked[row_i*5..row_i*5+5].iter().all(|p| *p) {
+            if self.marked[row_i * 5..row_i * 5 + 5].iter().all(|p| *p) {
                 return true;
             }
         }
         for col_i in 0..5 {
-            if (0..5).map(|i| self.marked[i*5+col_i]).all(|p| p) {
+            if (0..5).map(|i| self.marked[i * 5 + col_i]).all(|p| p) {
                 return true;
             }
         }
@@ -60,7 +64,7 @@ impl std::fmt::Debug for Board {
 pub struct Content {
     called: Vec<u32>,
     boards: Vec<Board>,
-    next_turn: usize
+    next_turn: usize,
 }
 
 impl Content {
@@ -85,7 +89,12 @@ impl Content {
 #[aoc_generator(day4)]
 pub fn input_generator(input: &str) -> Content {
     let mut lines = input.lines();
-    let called: Vec<u32> = lines.next().unwrap().split(',').map(|v| v.parse().unwrap()).collect();
+    let called: Vec<u32> = lines
+        .next()
+        .unwrap()
+        .split(',')
+        .map(|v| v.parse().unwrap())
+        .collect();
 
     let mut boards = Vec::new();
     let mut cur_board_nums: Vec<u32> = Vec::new();
@@ -97,14 +106,19 @@ pub fn input_generator(input: &str) -> Content {
             }
             continue;
         }
-        cur_board_nums.extend(line.split_ascii_whitespace().map(|v| v.parse::<u32>().unwrap()));
+        cur_board_nums.extend(
+            line.split_ascii_whitespace()
+                .map(|v| v.parse::<u32>().unwrap()),
+        );
     }
     if !cur_board_nums.is_empty() {
         boards.push(Board::from_tiles(&cur_board_nums));
         cur_board_nums.clear();
     }
     Content {
-        boards, called, next_turn: 0
+        boards,
+        called,
+        next_turn: 0,
     }
 }
 
@@ -127,7 +141,8 @@ pub fn solve_part2(input: &Content) -> usize {
         if game.boards.len() == 1 {
             // One left, wait for it to win
             if let Some(winner) = game.find_winner() {
-                return (game.last_called() as usize) * (winner.unmarked_tiles().sum::<u32>() as usize);
+                return (game.last_called() as usize)
+                    * (winner.unmarked_tiles().sum::<u32>() as usize);
             }
         } else {
             // keep only losing boards

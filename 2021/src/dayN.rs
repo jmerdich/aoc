@@ -4,17 +4,17 @@ pub struct Content {
 }
 
 #[aoc_generator(dayN)]
-pub fn input_generator(input: &str) -> Vec<Content> {
+pub fn input_generator(input: &str) -> Content {
     Vec::new()
 }
 
 #[aoc(dayN, part1)]
-pub fn solve_part1(input: &[Content]) -> usize {
+pub fn solve_part1(input: &Content) -> usize {
     0
 }
 
 #[aoc(dayN, part2)]
-pub fn solve_part2(input: &[Content]) -> usize {
+pub fn solve_part2(input: &Content) -> usize {
     0
 }
 

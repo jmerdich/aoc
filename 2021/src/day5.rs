@@ -1,6 +1,7 @@
 #![allow(unused_variables, dead_code, non_camel_case_types)]
 
 use std::cmp::{min, max};
+use std::cmp::Ordering;
 
 use coord::prelude::*;
 use coord::vec2;
@@ -8,7 +9,7 @@ use coord::vec2;
 use scan_fmt::scan_fmt;
 use grid::Grid;
 
-type gridsize = u32;
+type gridsize = i32;
 type griddata = u8;
 
 
@@ -71,27 +72,25 @@ pub struct Content {
 
 impl Content {
     fn draw_line(&mut self, l: &Line) {
-        let mut l = l.clone().sub(self.grid_start);
-        let step: Coord;
-        if l.is_hor() {
-            if l.start.x > l.end.x {
-                std::mem::swap(&mut l.start.x, &mut l.end.x);
+        let l = l.clone().sub(self.grid_start);
+        let step: Coord = Coord {
+            x: match l.start.x.cmp(&l.end.x) {
+                Ordering::Less => 1,
+                Ordering::Equal => 0,
+                Ordering::Greater => -1,
+            },
+            y: match l.start.y.cmp(&l.end.y) {
+                Ordering::Less => 1,
+                Ordering::Equal => 0,
+                Ordering::Greater => -1,
             }
-            assert!(l.start.x < l.end.x);
-            step = vec2!(1,0);
-        } else if l.is_vert() {
-            if l.start.y > l.end.y {
-                std::mem::swap(&mut l.start.y, &mut l.end.y);
-            }
-            step = vec2!(0,1);
-        } else {
-            return;
-        }
+        };
         let mut cur_pt = l.start;
+        let end = l.end + step; // dangling to get the last one.
         loop {
             *self.grid.get_mut(cur_pt.y as usize, cur_pt.x as usize).unwrap() += 1;
             cur_pt += step;
-            if cur_pt.x > l.end.x || cur_pt.y > l.end.y {
+            if cur_pt == end {
                 break;
             }
         };
@@ -126,7 +125,12 @@ pub fn solve_part1(input: &Content) -> usize {
 
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    0
+    let mut input = input.clone();
+    let lines = input.lines.clone();
+    for line in lines.iter() {
+        input.draw_line(&line);
+    }
+    input.grid.iter().filter(|v| **v >= 2).count()
 }
 
 #[cfg(test)]
@@ -154,7 +158,7 @@ mod test {
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 12);
     }
     #[test]
     fn part1() {
@@ -164,6 +168,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 19258);
     }
 }

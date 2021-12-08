@@ -11,3 +11,6 @@ aoc-runner = "0.3.0"
 #aoc-runner-derive = "0.3.0"
 aoc-runner-derive = { path = "../../cargo-aoc/aoc-runner-derive"}
 itertools = "0.10.3"
+scan_fmt = "0.2.6"
+coord = "0.11.1"
+grid = "0.6.0"

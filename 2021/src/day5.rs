@@ -3,8 +3,7 @@
 use std::cmp::{min, max};
 use std::cmp::Ordering;
 
-use coord::prelude::*;
-use coord::vec2;
+use vek::vec::vec2::Vec2;
 
 use scan_fmt::scan_fmt;
 use grid::Grid;
@@ -13,7 +12,7 @@ type gridsize = i32;
 type griddata = u8;
 
 
-type Coord = coord::vec2::Vec2<gridsize>;
+type Coord = Vec2<gridsize>;
 
 #[derive(Clone, Debug)]
 pub struct Line {
@@ -28,8 +27,8 @@ impl Line {
              gridsize, gridsize, gridsize, gridsize)?;
 
         Ok(Self{
-            start: vec2!(pts.0, pts.1),
-            end: vec2!(pts.2, pts.3),
+            start: Vec2::new(pts.0, pts.1),
+            end: Vec2::new(pts.2, pts.3),
         })
     }
 
@@ -50,8 +49,8 @@ impl Line {
         let max_y = lines.iter().map(|l| max(l.start.y, l.end.y)).max().unwrap();
 
         Line {
-            start: vec2!(min_x, min_y),
-            end: vec2!(max_x, max_y),
+            start: Vec2::new(min_x, min_y),
+            end: Vec2::new(max_x, max_y),
         }
     }
 

@@ -37,8 +37,8 @@ impl Content {
 
     pub fn from_ages(ages: &[u64]) -> Self {
         let mut counts: [u64; 10] = [0; 10];
-        for n in 0..10 {
-            counts[n] = ages.iter().filter(|v| **v == n as u64).count() as u64;
+        for (n, count_n) in counts.iter_mut().enumerate() {
+            *count_n = ages.iter().filter(|v| **v == n as u64).count() as u64;
         }
         Content { counts }
     }
@@ -47,7 +47,7 @@ impl Content {
 #[aoc_generator(day6)]
 pub fn input_generator(input: &str) -> Content {
     let ages: Vec<u64> = input
-        .split(",")
+        .split(',')
         .map(|n| n.trim().parse().unwrap())
         .collect();
     Content::from_ages(&ages)

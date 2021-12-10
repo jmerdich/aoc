@@ -127,7 +127,7 @@ pub fn solve_part1(input: &Content) -> usize {
     let lines = input.lines.clone();
     for line in lines.iter() {
         if line.is_hor_vert() {
-            input.draw_line(&line);
+            input.draw_line(line);
         }
     }
     input.grid.iter().filter(|v| **v >= 2).count()
@@ -138,7 +138,7 @@ pub fn solve_part2(input: &Content) -> usize {
     let mut input = input.clone();
     let lines = input.lines.clone();
     for line in lines.iter() {
-        input.draw_line(&line);
+        input.draw_line(line);
     }
     input.grid.iter().filter(|v| **v >= 2).count()
 }

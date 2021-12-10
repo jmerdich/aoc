@@ -51,7 +51,7 @@ pub fn input_generator(input: &str) -> Content {
     let readouts = input
         .lines()
         .map(|l| {
-            let (digits, values) = l.split("|").collect_tuple().unwrap();
+            let (digits, values) = l.split('|').collect_tuple().unwrap();
             let digits = digits.split_ascii_whitespace().map(|s| s.to_string());
             let values = values.split_ascii_whitespace().map(|s| s.to_string());
 

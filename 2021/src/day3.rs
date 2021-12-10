@@ -40,7 +40,7 @@ impl Content {
             .vals
             .iter()
             .filter(|v| (*v & bit_mask) == bit_val)
-            .map(|v| *v)
+            .copied()
             .collect();
     }
     fn discard_common_for_bit(&mut self, bit: u32) {
@@ -52,7 +52,7 @@ impl Content {
             .vals
             .iter()
             .filter(|v| (*v & bit_mask) == bit_val)
-            .map(|v| *v)
+            .copied()
             .collect();
     }
 

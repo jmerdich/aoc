@@ -5,6 +5,6 @@ authors = ["Jake Merdich <jake@merdich.com>"]
 edition = "2018"
 
 [dependencies]
-intcode = { path = "../intcode" }
+intcode = { path = "../../common/intcode" }
 permutohedron = "0.2.4"
 

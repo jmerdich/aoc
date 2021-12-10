@@ -5,5 +5,5 @@ authors = ["Jake Merdich <jake@merdich.com>"]
 edition = "2018"
 
 [dependencies]
-intcode = { path = "../intcode" }
-arbgrid = { path = "../arbgrid" }
+intcode = { path = "../../common/intcode" }
+arbgrid = { path = "../../common/arbgrid" }

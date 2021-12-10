@@ -2,7 +2,6 @@
 
 use itertools::Itertools;
 use itertools::enumerate;
-use std::convert::TryInto;
 
 
 // These use the standard "around then middle" scheme, not AoC's odd system
@@ -28,21 +27,31 @@ pub struct Content {
     readouts : Vec<Readout>
 }
 
-fn generate_mapping(digits: &[&str]) -> [char; 7] {
-    for seq in ('a'..='g').combinations(7) {
+
+fn digit_from_mapping<S: AsRef<str>>(value: S, mapping: &str) -> Option<u32> {
+    let mut segs = 0;
+    for (i, c) in enumerate(mapping.chars()) {
+        if value.as_ref().contains(c) {
+            segs |= 1 << i;
+        }
+    }
+    return DIGIT_SEGS.iter().position(|s| *s == segs).map(|us| us as u32);
+}
+
+
+fn generate_mapping<S: AsRef<str>>(digits: &[S]) -> String {
+    for seq in ('a'..='g').permutations(7) {
+        let seq: String = seq.into_iter().collect();
         let mut found = true;
         for testval in digits {
-            let mut exact_match = false;
-            for possible_seg in DIGIT_SEGS {
-                exact_match = enumerate(&seq).all(|(i,c)| testval.contains(*c) == (possible_seg & (1<<i) != 0));
-            }
-            if !exact_match {
+            let testval = testval.as_ref().trim();
+            if digit_from_mapping(testval, &seq).is_none() {
                 found = false;
                 break;
             }
         }
         if found {
-            return seq.try_into().unwrap();
+            return seq;
         }
     }
     todo!();
@@ -71,7 +80,15 @@ pub fn solve_part1(input: &Content) -> usize {
 }
 #[aoc(day8, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    0
+    input.readouts.iter().map(|r| {
+        let mapping = generate_mapping(&r.digits);
+        let mut out_num: usize = 0;
+        for value in &r.values {
+            out_num *= 10;
+            out_num += digit_from_mapping(value, mapping.as_ref()).unwrap() as usize;
+        }
+        out_num
+    }).sum()
 }
 
 #[cfg(test)]
@@ -99,7 +116,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 61229);
     }
     #[test]
     fn part1() {
@@ -109,6 +126,12 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 989396);
+    }
+
+    #[test]
+    fn map_result() {
+        let eg_mapping = "dabcgef";
+        assert_eq!(digit_from_mapping("cdfeb", eg_mapping), Some(5));
     }
 }

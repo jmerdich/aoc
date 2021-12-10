@@ -7,9 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aoc-runner = "0.3.0"
+#aoc-runner = "0.3.0"
+aoc-runner = { git = "https://github.com/jmerdich/cargo-aoc", branch = "dev" }
 #aoc-runner-derive = "0.3.0"
-aoc-runner-derive = { path = "../../cargo-aoc/aoc-runner-derive"}
+#aoc-runner-derive = { path = "../../cargo-aoc/aoc-runner-derive"}
+aoc-runner-derive = { git = "https://github.com/jmerdich/cargo-aoc", branch = "dev" }
 regex = "1.4.2"
 lazy_static = "1.4.0"
 itertools = "0.9.0"

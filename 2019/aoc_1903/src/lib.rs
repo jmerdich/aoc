@@ -181,14 +181,14 @@ impl Segment {
     fn intersect_point(&self, point: Point) -> Option<u32> {
         let hit: bool = match self.direction {
             LineDir::Hor => {
-                (self.origin.0 <= point.0
+                self.origin.0 <= point.0
                     && self.origin.0 + self.length as i32 >= point.0
-                    && self.origin.1 == point.1)
+                    && self.origin.1 == point.1
             }
             LineDir::Vert => {
-                (self.origin.1 <= point.1
+                self.origin.1 <= point.1
                     && self.origin.1 + self.length as i32 >= point.1
-                    && self.origin.0 == point.0)
+                    && self.origin.0 == point.0
             }
         };
         if !hit {

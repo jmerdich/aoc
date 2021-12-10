@@ -105,7 +105,7 @@ where
     }
 
     pub fn trim(&mut self) {
-        let old_map = std::mem::replace(&mut self.map, BTreeMap::new());
+        let old_map = std::mem::take(&mut self.map);
         self.min = None;
         self.max = None;
         let default = self.default.clone();

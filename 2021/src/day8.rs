@@ -1,32 +1,19 @@
 #![allow(unused_variables, dead_code)]
 
-use itertools::Itertools;
 use itertools::enumerate;
-
+use itertools::Itertools;
 
 // These use the standard "around then middle" scheme, not AoC's odd system
-const DIGIT_SEGS: [u8; 10] = [
-    0x3F,
-    0x06,
-    0x5B,
-    0x4F,
-    0x66,
-    0x6D,
-    0x7D,
-    0x07,
-    0x7F,
-    0x6F,
-];
+const DIGIT_SEGS: [u8; 10] = [0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F];
 
 struct Readout {
     digits: Vec<String>,
-    values: Vec<String>
+    values: Vec<String>,
 }
 
 pub struct Content {
-    readouts : Vec<Readout>
+    readouts: Vec<Readout>,
 }
-
 
 fn digit_from_mapping<S: AsRef<str>>(value: S, mapping: &str) -> Option<u32> {
     let mut segs = 0;
@@ -35,9 +22,11 @@ fn digit_from_mapping<S: AsRef<str>>(value: S, mapping: &str) -> Option<u32> {
             segs |= 1 << i;
         }
     }
-    return DIGIT_SEGS.iter().position(|s| *s == segs).map(|us| us as u32);
+    return DIGIT_SEGS
+        .iter()
+        .position(|s| *s == segs)
+        .map(|us| us as u32);
 }
-
 
 fn generate_mapping<S: AsRef<str>>(digits: &[S]) -> String {
     for seq in ('a'..='g').permutations(7) {
@@ -59,36 +48,51 @@ fn generate_mapping<S: AsRef<str>>(digits: &[S]) -> String {
 
 #[aoc_generator(day8)]
 pub fn input_generator(input: &str) -> Content {
-    let readouts = input.lines().map(|l| {
-        let (digits, values) = l.split("|").collect_tuple().unwrap();
-        let digits = digits.split_ascii_whitespace().map(|s| s.to_string());
-        let values = values.split_ascii_whitespace().map(|s| s.to_string());
+    let readouts = input
+        .lines()
+        .map(|l| {
+            let (digits, values) = l.split("|").collect_tuple().unwrap();
+            let digits = digits.split_ascii_whitespace().map(|s| s.to_string());
+            let values = values.split_ascii_whitespace().map(|s| s.to_string());
 
-        Readout {
-            digits: digits.collect(),
-            values: values.collect()
-        }
-    }).collect();
+            Readout {
+                digits: digits.collect(),
+                values: values.collect(),
+            }
+        })
+        .collect();
     Content { readouts }
 }
 
 #[aoc(day8, part1)]
 pub fn solve_part1(input: &Content) -> usize {
     let unique_nums = vec![2, 3, 4, 7];
-    input.readouts.iter().map(|r| r.values.iter().filter(|d| unique_nums.contains(&d.len())).count()).sum()
-
+    input
+        .readouts
+        .iter()
+        .map(|r| {
+            r.values
+                .iter()
+                .filter(|d| unique_nums.contains(&d.len()))
+                .count()
+        })
+        .sum()
 }
 #[aoc(day8, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    input.readouts.iter().map(|r| {
-        let mapping = generate_mapping(&r.digits);
-        let mut out_num: usize = 0;
-        for value in &r.values {
-            out_num *= 10;
-            out_num += digit_from_mapping(value, mapping.as_ref()).unwrap() as usize;
-        }
-        out_num
-    }).sum()
+    input
+        .readouts
+        .iter()
+        .map(|r| {
+            let mapping = generate_mapping(&r.digits);
+            let mut out_num: usize = 0;
+            for value in &r.values {
+                out_num *= 10;
+                out_num += digit_from_mapping(value, mapping.as_ref()).unwrap() as usize;
+            }
+            out_num
+        })
+        .sum()
 }
 
 #[cfg(test)]

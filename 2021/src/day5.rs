@@ -1,32 +1,36 @@
 #![allow(unused_variables, dead_code, non_camel_case_types)]
 
-use std::cmp::{min, max};
 use std::cmp::Ordering;
+use std::cmp::{max, min};
 
 use vek::vec::vec2::Vec2;
 
-use scan_fmt::scan_fmt;
 use grid::Grid;
+use scan_fmt::scan_fmt;
 
 type gridsize = i32;
 type griddata = u8;
-
 
 type Coord = Vec2<gridsize>;
 
 #[derive(Clone, Debug)]
 pub struct Line {
     start: Coord,
-    end: Coord
+    end: Coord,
 }
 
 impl Line {
     fn from_str(s: &str) -> Result<Self, scan_fmt::parse::ScanError> {
-        let pts = scan_fmt!(s,
+        let pts = scan_fmt!(
+            s,
             "{d}, {d} -> {d}, {d}",
-             gridsize, gridsize, gridsize, gridsize)?;
+            gridsize,
+            gridsize,
+            gridsize,
+            gridsize
+        )?;
 
-        Ok(Self{
+        Ok(Self {
             start: Vec2::new(pts.0, pts.1),
             end: Vec2::new(pts.2, pts.3),
         })
@@ -57,7 +61,7 @@ impl Line {
     fn sub(self, c: Coord) -> Self {
         Self {
             start: self.start - c,
-            end: self.end - c
+            end: self.end - c,
         }
     }
 }
@@ -66,7 +70,7 @@ impl Line {
 pub struct Content {
     lines: Vec<Line>,
     grid: Grid<griddata>,
-    grid_start: Coord
+    grid_start: Coord,
 }
 
 impl Content {
@@ -82,20 +86,22 @@ impl Content {
                 Ordering::Less => 1,
                 Ordering::Equal => 0,
                 Ordering::Greater => -1,
-            }
+            },
         };
         let mut cur_pt = l.start;
         let end = l.end + step; // dangling to get the last one.
         loop {
-            *self.grid.get_mut(cur_pt.y as usize, cur_pt.x as usize).unwrap() += 1;
+            *self
+                .grid
+                .get_mut(cur_pt.y as usize, cur_pt.x as usize)
+                .unwrap() += 1;
             cur_pt += step;
             if cur_pt == end {
                 break;
             }
-        };
+        }
     }
 }
-
 
 #[aoc_generator(day5)]
 pub fn input_generator(input: &str) -> Content {
@@ -104,9 +110,14 @@ pub fn input_generator(input: &str) -> Content {
     let bounds = Line::bounds(&lines);
     Content {
         lines,
-        grid: Grid::new((bounds.end.y + 1 - bounds.start.y) as usize, 
-                        (bounds.end.x + 1 - bounds.start.x) as usize),
-        grid_start: Coord{ x: bounds.start.x, y: bounds.start.y}
+        grid: Grid::new(
+            (bounds.end.y + 1 - bounds.start.y) as usize,
+            (bounds.end.x + 1 - bounds.start.x) as usize,
+        ),
+        grid_start: Coord {
+            x: bounds.start.x,
+            y: bounds.start.y,
+        },
     }
 }
 

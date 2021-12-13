@@ -1,11 +1,10 @@
 #![allow(unused_variables, dead_code)]
-use vek::Vec2;
 use scan_fmt::scan_fmt;
 use std::cmp::max;
+use vek::Vec2;
 
 type BGrid = grid::Grid<bool>;
 type UVec2 = Vec2<usize>;
-
 
 #[derive(Clone, Copy)]
 enum Fold {
@@ -18,7 +17,7 @@ pub struct Content {
     folds: Vec<Fold>,
 }
 fn fill_pts(grid: &mut BGrid, pts: &[UVec2]) {
-    for Vec2{x, y} in pts {
+    for Vec2 { x, y } in pts {
         *grid.get_mut(*y, *x).unwrap() = true;
     }
 }
@@ -29,39 +28,35 @@ fn fold(grid: &mut BGrid, dir: Fold) {
             while grid.cols() > tgt {
                 let col = grid.pop_col().unwrap();
                 if grid.cols() != tgt {
-                    for row in 0..grid.rows() {
-                        *grid.get_mut(row, 2*tgt - grid.cols()).unwrap() |= col[row];
+                    for (row, val) in col.iter().enumerate() {
+                        *grid.get_mut(row, 2 * tgt - grid.cols()).unwrap() |= val;
                     }
                 }
             }
-        },
+        }
         Fold::Vert(tgt) => {
             while grid.rows() > tgt {
                 let row = grid.pop_row().unwrap();
                 if grid.rows() != tgt {
-                    for col in 0..grid.cols() {
-                        *grid.get_mut(2*tgt - grid.rows(), col).unwrap() |= row[col];
+                    for (col, val) in row.iter().enumerate() {
+                        *grid.get_mut(2 * tgt - grid.rows(), col).unwrap() |= val;
                     }
                 }
             }
-        },
+        }
     }
 }
 
 impl Content {
-
     fn range(&self) -> UVec2 {
         let mut range = Vec2::new(0, 0);
 
         for p in &self.points {
-            range.x = max(p.x+1, range.x);
-            range.y = max(p.y+1, range.y);
+            range.x = max(p.x + 1, range.x);
+            range.y = max(p.y + 1, range.y);
         }
         range
     }
-
-
-
 }
 
 #[aoc_generator(day13)]
@@ -72,18 +67,17 @@ pub fn input_generator(input: &str) -> Content {
     for l in input.lines() {
         if let Ok((x, y)) = scan_fmt!(l, "{d},{d}", usize, usize) {
             points.push(Vec2::new(x, y));
-
         } else if let Ok((dir, loc)) = scan_fmt!(l, "fold along {[xy]}={d}", char, usize) {
             folds.push(match dir {
                 'y' => Fold::Vert(loc),
                 'x' => Fold::Hor(loc),
-                _ => { panic!(); }
+                _ => {
+                    panic!();
+                }
             });
         }
     }
-    Content {
-        points, folds
-    }
+    Content { points, folds }
 }
 
 #[aoc(day13, part1)]
@@ -116,7 +110,7 @@ pub fn solve_part2(input: &Content) -> usize {
                 print!(" ");
             }
         }
-        println!("");
+        println!();
     }
 
     0

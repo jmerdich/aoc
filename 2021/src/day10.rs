@@ -1,24 +1,18 @@
 #![allow(unused_variables, dead_code)]
 
 trait PairMatch {
-    fn is_begin(self) -> bool;
-    fn is_end(self) -> bool;
+    fn is_begin(&self) -> bool;
+    fn is_end(&self) -> bool;
     fn matching(self) -> Self;
     fn score(self) -> usize;
     fn comp_score(self) -> usize;
 }
 impl PairMatch for char {
-    fn is_begin(self) -> bool {
-        match self {
-            '(' | '[' | '{' | '<' => true,
-            _ => false
-        }
+    fn is_begin(&self) -> bool {
+        matches!(self, '(' | '[' | '{' | '<')
     }
-    fn is_end(self) -> bool {
-        match self {
-            ')' | ']' | '}' | '>' => true,
-            _ => false
-        }
+    fn is_end(&self) -> bool {
+        matches!(self, ')' | ']' | '}' | '>')
     }
 
     fn matching(self) -> char {
@@ -27,7 +21,7 @@ impl PairMatch for char {
             '[' => ']',
             '{' => '}',
             '<' => '>',
-            _ => '?'
+            _ => '?',
         }
     }
     fn score(self) -> usize {
@@ -36,7 +30,7 @@ impl PairMatch for char {
             ']' => 57,
             '}' => 1197,
             '>' => 25137,
-            _ => 0
+            _ => 0,
         }
     }
     fn comp_score(self) -> usize {
@@ -45,15 +39,14 @@ impl PairMatch for char {
             ']' => 2,
             '}' => 3,
             '>' => 4,
-            _ => 0
+            _ => 0,
         }
     }
 }
 
-
 #[derive(Default)]
 pub struct Stack {
-    back: String
+    back: String,
 }
 
 impl Stack {
@@ -68,7 +61,7 @@ impl Stack {
 
     fn pop(&mut self, c: char) -> Result<(), usize> {
         assert!(c.is_end());
-        if self.back.is_empty()  {
+        if self.back.is_empty() {
             return Err(c.score());
         }
 
@@ -81,7 +74,6 @@ impl Stack {
 
         Ok(())
     }
-
 
     fn parse_line(&mut self, s: &str) -> Result<(), usize> {
         for c in s.chars() {
@@ -106,17 +98,16 @@ impl Stack {
     fn is_empty(&self) -> bool {
         self.back.is_empty()
     }
-
 }
 
 pub struct Content {
-    lines: Vec<String>
+    lines: Vec<String>,
 }
 
 #[aoc_generator(day10)]
 pub fn input_generator(input: &str) -> Content {
     Content {
-        lines: input.lines().map(|s| s.to_string()).collect()
+        lines: input.lines().map(|s| s.to_string()).collect(),
     }
 }
 
@@ -124,9 +115,9 @@ pub fn input_generator(input: &str) -> Content {
 pub fn solve_part1(input: &Content) -> usize {
     let mut score = 0;
     for l in &input.lines {
-        let mut stack =  Stack::new();
+        let mut stack = Stack::new();
         match stack.parse_line(l.as_str()) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(line_score) => {
                 score += line_score;
             }
@@ -139,20 +130,15 @@ pub fn solve_part1(input: &Content) -> usize {
 pub fn solve_part2(input: &Content) -> usize {
     let mut scores = Vec::new();
     for l in &input.lines {
-        let mut stack =  Stack::new();
-        match stack.parse_line(l.as_str()) {
-            Ok(_) => {
-                if !stack.is_empty() {
-                    scores.push(stack.comp_score());
-                }
-            },
-            Err(_) => { }
+        let mut stack = Stack::new();
+        if stack.parse_line(l.as_str()).is_ok() && !stack.is_empty() {
+            scores.push(stack.comp_score());
         }
     }
 
-    scores.sort();
+    scores.sort_unstable();
 
-    scores[scores.len()/2]
+    scores[scores.len() / 2]
 }
 
 #[cfg(test)]

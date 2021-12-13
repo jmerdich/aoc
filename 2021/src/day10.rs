@@ -5,6 +5,7 @@ trait PairMatch {
     fn is_end(self) -> bool;
     fn matching(self) -> Self;
     fn score(self) -> usize;
+    fn comp_score(self) -> usize;
 }
 impl PairMatch for char {
     fn is_begin(self) -> bool {
@@ -38,7 +39,17 @@ impl PairMatch for char {
             _ => 0
         }
     }
+    fn comp_score(self) -> usize {
+        match self {
+            ')' => 1,
+            ']' => 2,
+            '}' => 3,
+            '>' => 4,
+            _ => 0
+        }
+    }
 }
+
 
 #[derive(Default)]
 pub struct Stack {
@@ -83,6 +94,19 @@ impl Stack {
         Ok(())
     }
 
+    fn comp_score(&self) -> usize {
+        let mut score = 0;
+        for c in self.back.chars().rev() {
+            score *= 5;
+            score += c.matching().comp_score();
+        }
+        score
+    }
+
+    fn is_empty(&self) -> bool {
+        self.back.is_empty()
+    }
+
 }
 
 pub struct Content {
@@ -113,7 +137,22 @@ pub fn solve_part1(input: &Content) -> usize {
 
 #[aoc(day10, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    0
+    let mut scores = Vec::new();
+    for l in &input.lines {
+        let mut stack =  Stack::new();
+        match stack.parse_line(l.as_str()) {
+            Ok(_) => {
+                if !stack.is_empty() {
+                    scores.push(stack.comp_score());
+                }
+            },
+            Err(_) => { }
+        }
+    }
+
+    scores.sort();
+
+    scores[scores.len()/2]
 }
 
 #[cfg(test)]

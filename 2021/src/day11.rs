@@ -46,7 +46,7 @@ impl Content {
     }
 
     fn full_flash(&mut self) -> usize {
-        let mut flashed= Grid::init(self.grid.rows(), self.grid.cols(), false);
+        let mut flashed = Grid::init(self.grid.rows(), self.grid.cols(), false);
 
         for x in 0..self.grid.cols() {
             for y in 0..self.grid.rows() {
@@ -74,7 +74,7 @@ impl Content {
 
     fn flash_for_point(&mut self, x: usize, y: usize, flashed: &mut Grid<bool>) {
         if *flashed.get(y, x).unwrap() || *self.grid.get(y, x).unwrap() <= 9 {
-            return
+            return;
         }
 
         *flashed.get_mut(y, x).unwrap() = true;
@@ -84,7 +84,6 @@ impl Content {
             self.flash_for_point(px, py, flashed);
         }
     }
-
 }
 
 #[aoc_generator(day11)]
@@ -112,24 +111,14 @@ pub fn solve_part1(input: &Content) -> usize {
 
 #[aoc(day11, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    // let mut pool_sizes: Vec<usize> = input
-    //     .find_mins()
-    //     .iter()
-    //     .map(|(x, y)| input.find_pool_size_for_point(*x, *y))
-    //     .collect();
-
-    // pool_sizes.sort_unstable();
-
-    // let mut res = 1;
-
-    // for _ in 0..3 {
-    //     if let Some(biggest) = pool_sizes.pop() {
-    //         res *= biggest;
-    //     }
-    // }
-
-    // res
-    0
+    let mut input = input.clone();
+    let mut i = 0;
+    loop {
+        i += 1;
+        if input.full_flash() == (input.grid.rows() * input.grid.cols()) {
+            return i;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -157,7 +146,7 @@ mod test {
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 195);
     }
     #[test]
     fn part1() {
@@ -167,6 +156,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 212);
     }
 }

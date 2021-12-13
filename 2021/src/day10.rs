@@ -180,7 +180,7 @@ mod test {
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 288957);
     }
     #[test]
     fn part1() {
@@ -190,6 +190,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 2391385187);
     }
 }

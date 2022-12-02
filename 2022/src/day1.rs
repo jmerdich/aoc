@@ -28,7 +28,12 @@ pub fn solve_part1(input: &Content) -> usize {
 
 #[aoc(day1, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    0
+    let mut tots : Vec<u64> = input.iter().map(|elf| elf.iter().sum()).collect();
+
+    tots.sort();
+    tots.reverse();
+
+    tots[0..3].iter().sum::<u64>() as usize
 }
 
 #[cfg(test)]
@@ -60,7 +65,7 @@ mod test {
     #[test]
     fn eg_part2() {
         let content = input_generator(EG_INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 45000);
     }
     #[test]
     fn part1() {
@@ -70,6 +75,6 @@ mod test {
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content), 0);
+        assert_eq!(solve_part2(&content), 200158);
     }
 }

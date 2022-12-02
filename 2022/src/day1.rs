@@ -28,7 +28,7 @@ pub fn solve_part1(input: &Content) -> usize {
 
 #[aoc(day1, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    let mut tots : Vec<u64> = input.iter().map(|elf| elf.iter().sum()).collect();
+    let mut tots: Vec<u64> = input.iter().map(|elf| elf.iter().sum()).collect();
 
     tots.sort();
     tots.reverse();

@@ -23,7 +23,7 @@ impl RPS {
             'A' | 'X' => RPS::Rock,
             'B' | 'Y' => RPS::Paper,
             'C' | 'Z' => RPS::Scissors,
-            _ => panic!("Unknown RPS type")
+            _ => panic!("Unknown RPS type"),
         }
     }
 }
@@ -32,7 +32,7 @@ impl RPS {
 pub enum GameRes {
     Loss,
     Draw,
-    Win
+    Win,
 }
 impl GameRes {
     fn score(&self) -> u32 {
@@ -47,9 +47,10 @@ impl GameRes {
         if us == them {
             return GameRes::Draw;
         }
-        if (us == RPS::Rock && them == RPS::Scissors) ||
-           (us == RPS::Scissors && them == RPS::Paper) ||
-           (us == RPS::Paper && them == RPS::Rock) {
+        if (us == RPS::Rock && them == RPS::Scissors)
+            || (us == RPS::Scissors && them == RPS::Paper)
+            || (us == RPS::Paper && them == RPS::Rock)
+        {
             return GameRes::Win;
         } else {
             return GameRes::Loss;
@@ -64,7 +65,7 @@ impl GameRes {
             'X' => GameRes::Loss,
             'Y' => GameRes::Draw,
             'Z' => GameRes::Win,
-            _ => panic!("Unknown GameRes type")
+            _ => panic!("Unknown GameRes type"),
         }
     }
 
@@ -75,7 +76,6 @@ impl GameRes {
             GameRes::Win => RPS::Scissors,
         }
     }
-
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -116,7 +116,10 @@ type Content = Vec<Match>;
 
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Content {
-    input.lines().map(|l|  Match::from_pair(scan_fmt!(l, "{} {}", char, char).unwrap())).collect()
+    input
+        .lines()
+        .map(|l| Match::from_pair(scan_fmt!(l, "{} {}", char, char).unwrap()))
+        .collect()
 }
 
 #[aoc(day2, part1)]
@@ -158,6 +161,6 @@ C Z
     #[test]
     fn part2() {
         let content = input_generator(INPUT);
-        assert_eq!(solve_part2(&content),9975);
+        assert_eq!(solve_part2(&content), 9975);
     }
 }

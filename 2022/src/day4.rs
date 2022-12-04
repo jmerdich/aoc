@@ -10,25 +10,40 @@ pub fn input_generator(input: &str) -> Content {
     let mut out = Vec::new();
     for line in input.lines() {
         let (r1a, r1b, r2a, r2b) = scan_fmt!(line, "{}-{},{}-{}", u32, u32, u32, u32).unwrap();
-        out.push((Range{start: r1a, end: r1b+1}, Range{start: r2a, end: r2b+1}))
+        out.push((
+            Range {
+                start: r1a,
+                end: r1b + 1,
+            },
+            Range {
+                start: r2a,
+                end: r2b + 1,
+            },
+        ))
     }
     out
 }
 
 #[aoc(day4, part1)]
 pub fn solve_part1(input: &Content) -> usize {
-    input.iter().filter(|(a, b)| {
-        (a.contains(&b.start) && a.contains(&(b.end - 1))) ||
-        (b.contains(&a.start) && b.contains(&(a.end - 1)))
-    }).count()
+    input
+        .iter()
+        .filter(|(a, b)| {
+            (a.contains(&b.start) && a.contains(&(b.end - 1)))
+                || (b.contains(&a.start) && b.contains(&(a.end - 1)))
+        })
+        .count()
 }
 
 #[aoc(day4, part2)]
 pub fn solve_part2(input: &Content) -> usize {
-    input.iter().filter(|(a, b)| {
-        (a.contains(&b.start) || a.contains(&(b.end - 1))) ||
-        (b.contains(&a.start) || b.contains(&(a.end - 1)))
-    }).count()
+    input
+        .iter()
+        .filter(|(a, b)| {
+            (a.contains(&b.start) || a.contains(&(b.end - 1)))
+                || (b.contains(&a.start) || b.contains(&(a.end - 1)))
+        })
+        .count()
 }
 
 #[cfg(test)]

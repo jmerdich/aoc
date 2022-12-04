@@ -6,7 +6,7 @@ fn priority(c: char) -> u32 {
     match c {
         'a'..='z' => (c as u32) - ('a' as u32) + 1,
         'A'..='Z' => (c as u32) - ('A' as u32) + 27,
-        _ => panic!("Unknown char '{}'", c)
+        _ => panic!("Unknown char '{}'", c),
     }
 }
 
@@ -21,7 +21,7 @@ pub fn input_generator(input: &str) -> Content {
         let sz = line.len();
         assert!(sz != 0);
 
-        out.push((line[0..sz/2].to_string(), line[sz/2..].to_string()))
+        out.push((line[0..sz / 2].to_string(), line[sz / 2..].to_string()))
     }
     out
 }
@@ -48,7 +48,11 @@ fn common_items2(a: &str, b: &str) -> String {
 
 #[aoc(day3, part1)]
 pub fn solve_part1(input: &Content) -> usize {
-    input.iter().map(common_items).map(|com| com.chars().map(priority).sum::<u32>() as usize).sum()
+    input
+        .iter()
+        .map(common_items)
+        .map(|com| com.chars().map(priority).sum::<u32>() as usize)
+        .sum()
 }
 
 #[aoc(day3, part2)]

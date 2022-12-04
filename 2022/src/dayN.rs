@@ -23,9 +23,9 @@ mod test {
     use super::*;
 
     const EG_INPUT: &str = "\
-deadbeef
-deadbeef";
-    const INPUT: &str = include_str!("../input/2021/dayN.txt");
+
+";
+    const INPUT: &str = include_str!("../input/2022/dayN.txt");
 
     #[test]
     fn eg_part1() {
